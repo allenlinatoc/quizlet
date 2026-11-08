@@ -40,15 +40,10 @@ Users can configure each deck to:
 2. Users can import questions from a QTI file into a quiz deck.
 3. The app informs the user when an import cannot be completed.
 
-## Open product decisions
+## First-release product decisions
 
-The following need agreement before detailed implementation and acceptance criteria are finalised:
-
-- Can users create and delete decks, and does importing a QTI file create a new deck or add to an existing one?
-- Which question types, answer formats, scoring rules and question details are supported?
-- What does the assessment result include, and can users review individual answers or previous sessions?
-- Can users skip questions, change answers, pause or abandon a session? When is a session considered complete?
-- Are points awarded per question, and what exactly is shown when real-time points are enabled?
-- Which QTI version and features must import and export support? How should unsupported content, partial imports and validation errors be handled?
-- Are deck settings and question order included in QTI exports, where the chosen QTI profile permits them?
-- Are accounts, shared decks, persistent storage or offline access required?
+- The app serves one person on their local computer with persistent storage and no accounts or sharing. Decks can be created, renamed and deleted. Completed results survive deck deletion; active sessions are abandoned.
+- Questions support single-answer, multiple-answer and true/false choices. Prompts, choices and optional explanations support basic formatting, raster images and formulas. A question is worth one point; multiple-answer responses require an exact set match.
+- Users can submit and lock an answer, skip and revisit unanswered questions, resume or abandon an attempt, and finish early after confirming that unanswered questions earn zero. A completed result includes score, percentage, counts and an individual answer review. Completed attempts appear in history.
+- Decks default to arranged order, immediate answer feedback and running points. Random order is fixed for the duration of a session. Running points show points earned out of the total possible.
+- Import and export support the documented QTI 3 choice-question subset. Import is all-or-nothing and reports errors. Import can create a deck or append to an existing one; existing settings remain unless explicitly replaced. Exports contain arranged order, media and Quizlet-specific settings metadata.
