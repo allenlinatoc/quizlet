@@ -4,7 +4,9 @@ A personal study app for building decks, practicing choice questions and reviewi
 
 ## Run on Windows
 
-Install Node.js 24, open PowerShell in this directory, and run:
+Install Node.js 24 and double-click `start-quizlet.bat`. It installs dependencies, builds the app, and opens it in your browser. Keep the launcher window open while using the app; press Ctrl+C to stop the server.
+
+Alternatively, open PowerShell in this directory and run:
 
 ```powershell
 npm.cmd install
