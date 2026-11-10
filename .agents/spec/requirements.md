@@ -2,48 +2,48 @@
 
 ## Purpose
 
-Quizlet helps users prepare for exams by practising questions organised into quiz decks. Users can maintain their question content, play a deck, and review their assessment results.
+Quizlet helps a person prepare for exams by maintaining quiz decks, practising questions, and reviewing results on their local computer.
 
 ## Terminology
 
-- **Quiz deck:** A collection of questions and settings used for practice.
-- **Question:** An assessment item within a quiz deck, including the information needed to present and assess it.
-- **Play session:** One attempt at answering the questions in a deck.
-- **Assessment result:** The outcome shown to the user after a play session.
+- **Quiz deck:** A named collection of questions and practice settings.
+- **Question:** A choice-based assessment item, its correct answer and an optional explanation.
+- **Play session:** One attempt at the questions in a deck.
+- **Assessment result:** The recorded outcome and answer review of a completed session.
 
-## Requirements
+## Product scope and storage
 
-### Quiz decks and questions
+1. The app serves one person locally, without accounts or sharing, and stores decks, sessions, results and uploaded images persistently in SQLite.
+2. The server listens on the local loopback interface. The data directory and server port can be configured.
+3. Users can create a consistent database backup while the app is running or stopped and restore it with the app stopped.
+4. On Windows, users can launch the app with the supplied launcher after installing Node.js 24. The launcher installs dependencies, builds the app and starts the local server.
 
-1. Users can select a quiz deck to practise.
-2. Users can rename a quiz deck.
-3. Users can create, view, update and delete questions within a quiz deck.
-4. Users can define the arranged order of questions in a deck.
+## Quiz decks and questions
 
-### Deck settings
+1. Users can create, select, view, rename and delete decks. The library shows deck and question counts and identifies decks with a session in progress.
+2. Users can create, view, edit and delete questions, and arrange their order using the available reorder controls.
+3. Questions support single-answer, multiple-answer and true/false choices. Prompts, choices and optional explanations support basic formatting, images and formulas.
+4. Images support PNG, JPEG and WebP, up to 10 MiB and 25 megapixels. Users can enter LaTeX formulas and describe uploaded images for accessibility.
+5. Deleting a deck abandons its active sessions but preserves completed results and their question snapshots.
 
-Users can configure each deck to:
+## Deck settings
 
-1. Present questions in their arranged order or in a randomised order when played.
-2. Show or hide the correct answer after each question.
-3. Show or hide points during a play session.
+1. Each deck can present questions in arranged or random order; random order remains fixed for the session.
+2. Each deck can show or hide answer feedback after submission and independently show or hide running points.
+3. New decks default to arranged order, answer feedback and running points. Running points show points earned out of the total possible.
 
-### Playing and results
+## Playing and results
 
-1. Users can start a play session for a selected deck and answer its questions in the configured order.
-2. During the session, the app applies the deck's answer and points display settings.
-3. After a play session, the app shows the user an assessment result.
+1. Users can start a session for a deck, submit and lock answers, skip questions and return to unanswered questions.
+2. Users can save and exit, resume or abandon an unfinished attempt, or start over.
+3. Users can finish with unanswered questions after confirming that those questions earn zero points.
+4. Each question is worth one point. A multiple-answer response earns its point only when the entire correct set is selected.
+5. A completed session shows the score, percentage, counts and individual answer review. Completed sessions appear in study history and remain available after the source deck is changed or deleted.
 
-### QTI interchange
+## QTI interchange
 
-1. Users can export a quiz deck in QTI format.
-2. Users can import questions from a QTI file into a quiz deck.
-3. The app informs the user when an import cannot be completed.
-
-## First-release product decisions
-
-- The app serves one person on their local computer with persistent storage and no accounts or sharing. Decks can be created, renamed and deleted. Completed results survive deck deletion; active sessions are abandoned.
-- Questions support single-answer, multiple-answer and true/false choices. Prompts, choices and optional explanations support basic formatting, raster images and formulas. A question is worth one point; multiple-answer responses require an exact set match.
-- Users can submit and lock an answer, skip and revisit unanswered questions, resume or abandon an attempt, and finish early after confirming that unanswered questions earn zero. A completed result includes score, percentage, counts and an individual answer review. Completed attempts appear in history.
-- Decks default to arranged order, immediate answer feedback and running points. Random order is fixed for the duration of a session. Running points show points earned out of the total possible.
-- Import and export support the documented QTI 3 choice-question subset. Import is all-or-nothing and reports errors. Import can create a deck or append to an existing one; existing settings remain unless explicitly replaced. Exports contain arranged order, media and Quizlet-specific settings metadata.
+1. Users can export a deck to a QTI 3 ZIP package, including arranged question order, supported media and Quizlet-specific settings metadata.
+2. Users can import a supported QTI package as a new deck or append its questions to an existing deck. Existing deck settings remain unless the user chooses to apply imported Quizlet settings.
+3. Import and export support a subset of QTI 3: a single flat assessment section or item collection, choice interactions, explicit correct choices and `match_correct` scoring, with supported text formatting, images, presentation MathML and one general explanation. The implementation is not certified by 1EdTech.
+4. Import is all-or-nothing and reports errors without changing the destination. Unsupported content, external media URLs and XML entity declarations are rejected.
+5. Packages are limited to 50 MiB compressed, 250 MiB expanded, 5,000 entries and 1,000 questions. Image limits also apply to imported media.
