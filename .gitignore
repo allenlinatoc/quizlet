@@ -5,3 +5,8 @@ data/
 coverage/
 .tools/
 *.log
+.env
+.env.*
+!.env.example
+/.agents/plans/
+/vendor/text-extract-api/upstream/

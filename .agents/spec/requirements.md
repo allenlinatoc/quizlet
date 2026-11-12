@@ -47,3 +47,13 @@ Quizlet helps a person prepare for exams by maintaining quiz decks, practising q
 3. Import and export support a subset of QTI 3: a single flat assessment section or item collection, choice interactions, explicit correct choices and `match_correct` scoring, with supported text formatting, images, presentation MathML and one general explanation. The implementation is not certified by 1EdTech.
 4. Import is all-or-nothing and reports errors without changing the destination. Unsupported content, external media URLs and XML entity declarations are rejected.
 5. Packages are limited to 50 MiB compressed, 250 MiB expanded, 5,000 entries and 1,000 questions. Image limits also apply to imported media.
+
+
+## PDF-to-deck conversion
+
+1. Users can upload a PDF of up to 250 MiB and 2,000 pages, select page ranges or suggested bookmark sections, and optionally identify up to 20 answer-key pages.
+2. Users can extract existing choice questions or generate questions from selected study material. Generation supports a target count and difficulty. Users can produce one combined deck or separate decks by section.
+3. Selected PDF pages are sent to the configured OpenAI service for processing. The user can inspect a cost estimate and set a job budget; costs and budget reservations are estimates and actual charges may exceed them.
+4. Conversion jobs and drafts persist locally. Users can pause and resume processing and delete jobs. An interrupted request requires explicit confirmation before retry because it may have been billed.
+5. Users review and edit questions, source pages, answers, explanations, formulas and relevant figure crops before publication. Flagged questions must be marked reviewed, and invalid or unanswered questions must be corrected or excluded.
+6. Approved drafts produce QTI packages and playable decks through the existing QTI validation and import path. Repeated publication does not create duplicate decks. Published figures remain after the source job is deleted.

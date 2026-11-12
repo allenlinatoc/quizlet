@@ -2,6 +2,7 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import os
+import subprocess
 from playwright.sync_api import sync_playwright, expect
 
 BASE = os.environ["QUIZLET_TEST_BASE"]
@@ -18,6 +19,25 @@ with sync_playwright() as playwright:
     try:
         page.goto(BASE, wait_until="networkidle")
         expect(page.get_by_role("heading", name="A little progress every day.")).to_be_visible()
+        page.get_by_role("button", name="Create from PDF").click()
+        expect(page.get_by_role("heading", name="Create from PDF")).to_be_visible()
+        with TemporaryDirectory(prefix="quizlet-pdf-browser-") as temp:
+            pdf_path = Path(temp) / "lesson.pdf"
+            subprocess.run(["node", "--input-type=module", "-e", "import {PDFDocument} from 'pdf-lib'; import {writeFileSync} from 'node:fs'; const d=await PDFDocument.create(); d.addPage(); writeFileSync(process.argv[1],await d.save());", str(pdf_path)], check=True)
+            page.locator('input[type="file"][accept*="pdf"]').set_input_files(str(pdf_path))
+            expect(page.get_by_text("1 pages · new")).to_be_visible()
+            expect(page.locator("canvas.pdf-canvas")).to_be_visible()
+            page.get_by_role("button", name="Save settings and estimate").click()
+            expect(page.get_by_text("Estimated reservation", exact=False)).to_be_visible()
+            page.get_by_role("button", name="All conversions").click()
+            expect(page.get_by_role("button", name="lesson · new · 0 questions")).to_be_visible()
+            page.locator('input[type="file"][accept*="pdf"]').set_input_files(str(pdf_path))
+            page.get_by_label("Processing provider").select_option("text-extract")
+            expect(page.get_by_label("Budget (USD)")).to_have_count(0)
+            page.get_by_role("button", name="Save settings", exact=True).click()
+            expect(page.get_by_text("Local extraction is configured", exact=False)).to_be_visible()
+            expect(page.get_by_text("Selected pages are sent to the configured extraction service", exact=False)).to_be_visible()
+        page.get_by_role("button", name="Back to library").click()
         page.once("dialog", lambda dialog: dialog.accept("Biology"))
         page.get_by_role("button", name="Create a deck", exact=True).click()
         expect(page.get_by_role("heading", name="Biology")).to_be_visible()

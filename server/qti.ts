@@ -25,26 +25,28 @@ function validateItemShape(nodes:XmlNode[], file:string) {
 function plain(nodes: XmlNode[]): string { return nodes.map(n => n['#text'] !== undefined ? String(n['#text']) : plain(children(n))).join(''); }
 function safePath(p: string) { const decoded = decodeURIComponent(p).replace(/\\/g,'/'); if (!decoded || decoded.startsWith('/') || /^[A-Za-z]:/.test(decoded) || decoded.split('/').includes('..') || decoded.includes('\0') || /[?#]/.test(decoded)) throw new Error('Invalid package path'); return decoded.replace(/^\.\//,''); }
 function relativePath(base:string, href:string) { const decoded=decodeURIComponent(href).replace(/\\/g,'/'); if (!decoded || decoded.startsWith('/') || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(decoded) || decoded.includes('\0') || /[?#]/.test(decoded)) throw new Error('Invalid package reference'); const segments=path.posix.dirname(base).split('/').filter(x=>x && x!=='.'); for(const part of decoded.split('/')){if(part==='..'){if(!segments.length)throw new Error('Package reference escapes its root');segments.pop()}else if(part && part!=='.')segments.push(part)} return safePath(segments.join('/')); }
-function docXml(node: RichNode, assets: Map<string, { mime:string; data:Buffer }>): string {
+type MediaResolver = (id:string) => {mime:string;data:Buffer}|undefined;
+const storedMedia: MediaResolver = id => db.prepare('SELECT mime,data FROM media WHERE id=?').get(id) as {mime:string;data:Buffer}|undefined;
+function docXml(node: RichNode, assets: Map<string, { mime:string; data:Buffer }>, resolve:MediaResolver): string {
   if (node.type === 'text') { let text = esc(node.text || ''); for (const m of node.marks || []) { const tag = ({ bold:'strong', italic:'em', strike:'s', code:'code' } as Record<string,string>)[m.type]; if (!tag) throw new Error('Unsupported formatting'); text = `<${tag}>${text}</${tag}>`; } return text; }
   if (node.type === 'hardBreak') return '<br/>';
-  if (node.type === 'image') { const id = String(node.attrs?.src || '').split('/').pop()!; const row = db.prepare('SELECT mime,data FROM media WHERE id=?').get(id) as {mime:string;data:Buffer}|undefined; if (!row) throw new Error('An image is missing'); const ext = row.mime === 'image/png' ? 'png' : row.mime === 'image/jpeg' ? 'jpg' : 'webp'; const file = `media/${id}.${ext}`; assets.set(file,row); return `<img src="${file}" alt="${esc(String(node.attrs?.alt || ''))}"/>`; }
+  if (node.type === 'image') { const id = String(node.attrs?.src || '').split('/').pop()!; const row = resolve(id); if (!row) throw new Error('An image is missing'); const ext = row.mime === 'image/png' ? 'png' : row.mime === 'image/jpeg' ? 'jpg' : 'webp'; const file = `media/${id}.${ext}`; assets.set(file,row); return `<img src="${file}" alt="${esc(String(node.attrs?.alt || ''))}"/>`; }
   if (node.type === 'math') { const latex = String(node.attrs?.latex || ''); if (!latex) return sanitizeMathML(String(node.attrs?.mathml || '')); return katex.renderToString(latex,{output:'mathml',displayMode:node.attrs?.display === true,throwOnError:true}).replace(/^<span[^>]*>/,'').replace(/<\/span>$/,''); }
-  const body = (node.content || []).map(n => docXml(n,assets)).join('');
+  const body = (node.content || []).map(n => docXml(n,assets,resolve)).join('');
   const tag = ({ doc:'', paragraph:'p', bulletList:'ul', orderedList:'ol', listItem:'li' } as Record<string,string>)[node.type];
   if (tag === undefined) throw new Error('Unsupported document content');
   return tag ? `<${tag}>${body}</${tag}>` : body;
 }
-const docBody = (doc: RichDocument, assets: Map<string,{mime:string;data:Buffer}>) => docXml(doc,assets);
-export function exportQti(deck: Deck): Buffer {
+const docBody = (doc: RichDocument, assets: Map<string,{mime:string;data:Buffer}>, resolve:MediaResolver) => docXml(doc,assets,resolve);
+export function exportQti(deck: Deck, resolve:MediaResolver = storedMedia): Buffer {
   const zip = new AdmZip(); const assets = new Map<string,{mime:string;data:Buffer}>();
   const itemRefs: string[] = []; const resources: string[] = [];
   deck.questions.forEach((q, index) => {
     const itemId = `item_${index + 1}`; const itemPath = `${itemId}.xml`;
     const itemAssets = new Map<string,{mime:string;data:Buffer}>();
-    const choices = q.choices.map((c,i) => `<qti-simple-choice identifier="C${i+1}">${docBody(c.content,itemAssets)}</qti-simple-choice>`).join('');
+    const choices = q.choices.map((c,i) => `<qti-simple-choice identifier="C${i+1}">${docBody(c.content,itemAssets,resolve)}</qti-simple-choice>`).join('');
     const correct = q.correctChoiceIds.map(id => `<qti-value>C${q.choices.findIndex(c => c.id === id)+1}</qti-value>`).join('');
-    const explanation = docBody(q.explanation,itemAssets); const prompt=docBody(q.prompt,itemAssets);
+    const explanation = docBody(q.explanation,itemAssets,resolve); const prompt=docBody(q.prompt,itemAssets,resolve);
     const xml = `<?xml version="1.0" encoding="UTF-8"?><qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0" identifier="${itemId}" title="Question ${index+1}" adaptive="false" time-dependent="false"><qti-response-declaration identifier="RESPONSE" cardinality="${q.type === 'multiple' ? 'multiple' : 'single'}" base-type="identifier"><qti-correct-response>${correct}</qti-correct-response></qti-response-declaration><qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"><qti-default-value><qti-value>0</qti-value></qti-default-value></qti-outcome-declaration><qti-outcome-declaration identifier="FEEDBACK" cardinality="single" base-type="identifier"><qti-default-value><qti-value>GENERAL</qti-value></qti-default-value></qti-outcome-declaration><qti-item-body><qti-choice-interaction response-identifier="RESPONSE" max-choices="${q.type === 'multiple' ? '0' : '1'}" shuffle="false"><qti-prompt>${prompt}</qti-prompt>${choices}</qti-choice-interaction></qti-item-body><qti-response-processing template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct.xml"/>${explanation ? `<qti-modal-feedback identifier="GENERAL" outcome-identifier="FEEDBACK" show-hide="show"><qti-content-body>${explanation}</qti-content-body></qti-modal-feedback>` : ''}</qti-assessment-item>`;
     for(const [file,asset] of itemAssets) assets.set(file,asset);
     zip.addFile(itemPath,Buffer.from(xml)); itemRefs.push(`<qti-assessment-item-ref identifier="REF_${index+1}" href="${itemPath}"/>`); resources.push(`<resource identifier="${itemId}" type="imsqti_item_xmlv3p0" href="${itemPath}"><file href="${itemPath}"/>${[...itemAssets.keys()].map(file=>`<file href="${file}"/>`).join('')}</resource>`);

@@ -1,0 +1,19 @@
+.pdf-tool { max-width: 1500px; margin: 0 auto; }
+.pdf-tool h2 { margin: 1rem 0; }
+.pdf-tool input:not([type=checkbox]):not([type=radio]):not([type=file]), .pdf-tool select { border: 1px solid #d9d7e5; border-radius: 8px; padding: 9px; background: white; width: 100%; }
+.pdf-tool label { display: block; }
+.pdf-tool label input, .pdf-tool label select { margin-top: 5px; }
+.pdf-tool .form-card { margin: 16px 0; }
+.pdf-job { display: block; width: 100%; text-align: left; margin: 8px 0; }
+.pdf-toolbar, .pdf-section, .pdf-choice { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+.pdf-section input { flex: 1; min-width: 140px; }
+.pdf-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.pdf-answer-pages { margin: 12px 0; }
+.pdf-review { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr); gap: 20px; align-items: start; }
+.pdf-review aside { position: sticky; top: 20px; max-height: 90vh; overflow: auto; }
+.pdf-canvas { display: block; width: 100%; height: auto; border: 1px solid #ddd; background: white; margin-top: 10px; }
+.pdf-choice .rich-editor { flex: 1; min-width: 180px; }
+.pdf-flag { background: #fff1cd; border-radius: 6px; padding: 8px; }
+.pdf-figure { padding: 12px; margin: 12px 0; background: #f7f6fc; border-radius: 8px; }
+.pdf-crop { display: block; max-width: 100%; max-height: 300px; margin: 10px 0; }
+@media (max-width: 800px) { .pdf-review { grid-template-columns: 1fr; } .pdf-review aside { position: static; max-height: none; } }

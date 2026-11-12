@@ -1,0 +1,6 @@
+upstream/.git
+upstream/.dvenv
+upstream/.venv
+upstream/__pycache__
+upstream/storage
+upstream/logs

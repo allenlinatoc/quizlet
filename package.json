@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "workspaces": ["server", "src", "shared"],
+  "workspaces": [
+    "server",
+    "src",
+    "shared"
+  ],
   "scripts": {
-    "dev": "concurrently -k \"tsx watch server/index.ts\" \"vite --host 127.0.0.1\"",
+    "dev": "concurrently -k \"node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs watch server/index.ts\" \"vite --host 127.0.0.1\"",
     "build": "tsc --noEmit && vite build && esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist-server/index.js",
-    "start": "node dist-server/index.js",
-    "backup": "node scripts/backup.mjs",
+    "start": "node --env-file-if-exists=.env dist-server/index.js",
+    "backup": "node --env-file-if-exists=.env scripts/backup.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:browser": "python tests/run_browser.py"
@@ -26,6 +30,9 @@
     "katex": "^0.16.22",
     "lucide-react": "^0.468.0",
     "multer": "^2.0.0",
+    "openai": "^7.55.0",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.5.438",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^4.0.0"

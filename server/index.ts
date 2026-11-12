@@ -8,6 +8,7 @@ import { isCorrect, publicSession, shuffle, validateQuestion } from './domain';
 import { defaultSettings, type Deck, type Session } from '../shared/types';
 import { exportQti, importQti } from './qti';
 import { validateImage } from './media';
+import pdfJobs from './pdf-jobs';
 
 const app = express();
 app.use(express.json({ limit: '2mb' }));
@@ -18,6 +19,7 @@ const requireDeck = (id: string) => { const deck = getDeck(id); if (!deck) throw
 const requireSession = (id: string) => { const session = getSession(id); if (!session) throw new HttpError(404, 'Session not found'); return session; };
 const active = (s: Session) => { if (s.status !== 'active') throw new HttpError(409, 'This session has already ended'); };
 const now = () => new Date().toISOString();
+app.use('/api/pdf-jobs', pdfJobs);
 let listener: ReturnType<typeof app.listen> | undefined;
 if (process.env.QUIZLET_TEST_SHUTDOWN_TOKEN) app.post('/api/test-shutdown', (req,res) => { if (req.get('authorization') !== `Bearer ${process.env.QUIZLET_TEST_SHUTDOWN_TOKEN}`) throw new HttpError(404, 'API route not found'); res.on('finish',()=>listener?.close()); res.status(204).end(); });
 

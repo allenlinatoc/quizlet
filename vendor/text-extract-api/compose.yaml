@@ -1,0 +1,40 @@
+services:
+  api:
+    image: quizlet-text-extract:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["uvicorn", "text_extract_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment: &settings
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      REDIS_CACHE_URL: redis://redis:6379/1
+      OLLAMA_HOST: http://ollama:11434
+      STORAGE_PROFILE_PATH: /app/storage_profiles
+      OCR_CONFIG_PATH: /app/config/strategies.yaml
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - redis
+      - ollama
+  worker:
+    image: quizlet-text-extract:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["celery", "-A", "text_extract_api.celery_app", "worker", "--loglevel=info", "--pool=solo"]
+    environment: *settings
+    volumes:
+      - easyocr-models:/root/.EasyOCR
+    depends_on:
+      - redis
+      - ollama
+  redis:
+    image: redis:7.2.4-alpine
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama-models:/root/.ollama
+volumes:
+  easyocr-models:
+  ollama-models:

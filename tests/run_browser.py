@@ -19,6 +19,8 @@ with TemporaryDirectory(prefix="quizlet-browser-db-") as temp:
     environment = os.environ.copy()
     token = secrets.token_hex(24)
     environment.update(PORT=str(port), QUIZLET_DATA_DIR=temp, QUIZLET_TEST_BASE=f"http://127.0.0.1:{port}", QUIZLET_TEST_SHUTDOWN_TOKEN=token)
+    environment.update(OPENAI_API_KEY="test-only", OPENAI_PDF_MODEL="test-only", OPENAI_PDF_INPUT_PRICE_PER_MILLION="1", OPENAI_PDF_OUTPUT_PRICE_PER_MILLION="1")
+    environment.update(TEXT_EXTRACT_API_URL="http://127.0.0.1:18001")
     command = [sys.executable, str(helper), "--server", "npm run start", "--port", str(port), "--", sys.executable, str(root / "tests/browser.py")]
     try:
         result = subprocess.run(command, cwd=root, env=environment, check=False).returncode

@@ -25,3 +25,12 @@ The parser disables DTD/entity declarations, rejects archive traversal and exter
 ## Verification and operations
 
 `npm run typecheck`, `npm test` and `npm run build` cover type checking, API integration and production builds. The Python Playwright browser smoke test runs the built server against a temporary isolated database through the webapp-testing helper. The README documents setup, browser test prerequisites, backups and restore. Tests must never use the real database.
+
+
+## PDF conversion
+
+The PDF screen uses PDF.js for page previews, bookmarks and figure cropping. The server stores source PDFs, conversion state, drafts, usage and draft images in SQLite. A single in-process worker uses pdf-lib to prepare bounded page batches and answer-key pages. The OpenAI option sends those batches to a vision model with structured output. Adjacent pages provide context for questions spanning batch boundaries. Interrupted OpenAI requests are marked uncertain, estimated reservations count against the job budget, and retries require user confirmation. Cost limits are estimates, not provider-enforced spending caps.
+
+The alternative text-extract-api adapter submits individual pages for OCR, persists task IDs and page text in SQLite, and submits page-labelled text to the configured Ollama model for question parsing. The service runs separately. Model output is validated before it becomes drafts; OCR task polling resumes from saved IDs. The service contract is covered by a simulated integration test but has not yet been verified against a live deployment. Local and OpenAI drafts share the same review, validation and QTI path.
+
+Review uses the existing rich editor. Approved drafts are validated and exported as QTI, re-imported through the existing parser, and committed as decks and media in one SQLite transaction. PDF jobs and media participate in normal database backups. Model, API key and prices are configured server-side through environment variables documented in the README.

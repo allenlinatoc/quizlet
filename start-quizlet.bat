@@ -23,7 +23,7 @@ echo Building Quizlet...
 call npm.cmd run build
 if errorlevel 1 goto :failed
 
-if not defined PORT set "PORT=3001"
+for /f "delims=" %%P in ('node --env-file-if-exists^=.env -p "process.env.PORT || 3001"') do set "PORT=%%P"
 echo Starting Quizlet at http://127.0.0.1:%PORT%
 echo Press Ctrl+C to stop the server.
 start "" /b cmd /c "timeout /t 3 /nobreak >nul ^& start "" "http://127.0.0.1:%PORT%""
