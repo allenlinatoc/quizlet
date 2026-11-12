@@ -1,0 +1,44 @@
+[
+  {
+    "url": "https://www.imsglobal.org/sites/default/files/question/qtiv1p2/qtiasifulldtd/ims_qtiasiv1p2.dtd",
+    "file": "ims_qtiasiv1p2.dtd",
+    "sha256": "e8db71956c68993177a8a6a712df7a89efe9fa7dc7597350c365ca009f7910ce",
+    "retrieved": "2026-11-13"
+  },
+  {
+    "url": "https://www.imsglobal.org/question/qtiv1p2/imsqti_asi_bindv1p2.html",
+    "file": "imsqti_asi_bindv1p2.html",
+    "sha256": "d2abfdf55a9b31d0066f93a66a02c6d6f64f91554d0c424207399a120404519f",
+    "retrieved": "2026-11-13"
+  },
+  {
+    "url": "https://www.imsglobal.org/question/qtiv1p2/imsqti_asi_infov1p2.html",
+    "file": "imsqti_asi_infov1p2.html",
+    "sha256": "dba5ed8af04d5d4992dae9814114a7e2d82b454f251c3efc9f0d59c71ef554c7",
+    "retrieved": "2026-11-13"
+  },
+  {
+    "url": "https://www.imsglobal.org/question/qtiv1p2/imsqti_asi_outv1p2.html",
+    "file": "imsqti_asi_outv1p2.html",
+    "sha256": "82018013a4d971e3998c912af814d295f7fdd78903fdf501e5d6f60a3f11dd60",
+    "retrieved": "2026-11-13"
+  },
+  {
+    "url": "https://www.imsglobal.org/question/qtiv1p2/imsqti_asi_saov1p2.html",
+    "file": "imsqti_asi_saov1p2.html",
+    "sha256": "b13506b539c80489deebda5874770bea87e4e34362b4502e3cd952e80878d537",
+    "retrieved": "2026-11-13"
+  },
+  {
+    "url": "https://www.imsglobal.org/question/qtiv1p2/imsqti_res_bindv1p2.html",
+    "file": "imsqti_res_bindv1p2.html",
+    "sha256": "bb4a0ae53e3a499179ad17cbabbd255e4513fee521ea3ee349f98b02de855383",
+    "retrieved": "2026-11-13"
+  },
+  {
+    "url": "https://www.imsglobal.org/question/qtiv1p2/imsqti_res_infov1p2.html",
+    "file": "imsqti_res_infov1p2.html",
+    "sha256": "72d006437bd0dfed9439c08d574eba9a415cbfaae5241aca94fba5e41decc265",
+    "retrieved": "2026-11-13"
+  }
+]

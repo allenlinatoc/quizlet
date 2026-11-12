@@ -51,7 +51,7 @@ Quizlet helps a person prepare for exams by maintaining quiz decks, practising q
 
 1. Users can export a deck to a QTI 3 ZIP package, including arranged question order, supported media and Quizlet-specific settings metadata.
 2. Users can import a supported QTI package as a new deck or append its questions to an existing deck. Existing deck settings remain unless the user chooses to apply imported Quizlet settings.
-3. Import and export support a subset of QTI 3: a single flat assessment section or item collection, choice interactions, explicit correct choices and `match_correct` scoring, with supported text formatting, images, presentation MathML and one general explanation. Import also supports a subset of QTI 1.2: one flat assessment section containing single-answer choice questions with explicit supported scoring, plain text and local images. Export remains QTI 3. The implementation is not certified by 1EdTech.
+3. Import and export support a subset of QTI 3: a single flat assessment section or item collection, choice interactions, explicit correct choices and `match_correct` scoring, with supported text formatting, images, presentation MathML and one general explanation. Export remains QTI 3. The implementation is not certified by 1EdTech.
 4. Import is all-or-nothing and reports errors without changing the destination. Unsupported content, external media URLs and XML entity declarations are rejected.
 5. Packages are limited to 50 MiB compressed, 250 MiB expanded, 5,000 entries and 1,000 questions. Image limits also apply to imported media.
 

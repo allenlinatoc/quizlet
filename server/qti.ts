@@ -77,60 +77,13 @@ function fromXml(nodes: XmlNode[], media: Map<string, {id:string;mime:string;dat
 }
 function toDoc(nodes: XmlNode[], media: Map<string,{id:string;mime:string;data:Buffer}>, base:string): RichDocument { const parsed=fromXml(nodes,media,base); const content:RichNode[]=[]; let inline:RichNode[]=[]; const flush=()=>{ if(inline.length) {content.push({type:'paragraph',content:inline});inline=[];} }; for (const n of parsed) { if (['paragraph','bulletList','orderedList'].includes(n.type)) {flush();content.push(n);} else inline.push(n); } flush(); return {type:'doc',content:content.length ? content : [{type:'paragraph'}]}; }
 function promptNodes(body:XmlNode, prompt:XmlNode):XmlNode[] { const nodes=children(body);const index=nodes.findIndex(n=>name(n)==='qti-choice-interaction');if(index<0 || nodes.slice(index+1).some(n=>name(n)||String(n['#text']||'').trim()))throw new Error('Content after the choice interaction is not supported');return [...nodes.slice(0,index),...children(prompt)]; }
-function importQti12(file:string, data:Buffer, files:Map<string,Buffer>) {
-  const xml=parse(data.toString('utf8'));
-  const assessments=all(xml,'assessment'), sections=all(xml,'section'), items=all(xml,'item');
-  if (assessments.length!==1 || sections.length!==1 || all(children(sections[0]),'section').length || all(xml,'selection_ordering').length) throw new Error(`${file}: only one flat QTI 1.2 assessment section is supported`);
-  if (!items.length || items.length>1000) throw new Error(`${file}: assessment must contain between 1 and 1,000 questions`);
-  const media=new Map<string,{id:string;mime:string;data:Buffer}>();
-  function material(nodes:XmlNode[], label:string):RichDocument {
-    const result:RichNode[]=[];
-    for(const node of nodes) {
-      const tag=name(node); if(!tag) continue;
-      if(tag==='material') { result.push(...material(children(node),label).content!); continue; }
-      if(tag==='mattext') { if(attr(node,'texttype') && attr(node,'texttype')!=='text/plain') throw new Error(`${label}: unsupported text format`); if(children(node).some(n=>name(n))) throw new Error(`${label}: unsupported text markup`); result.push({type:'paragraph',content:[{type:'text',text:plain(children(node))}]}); continue; }
-      if(tag==='matimage') { const key=relativePath(file,attr(node,'uri')); const bytes=files.get(key); if(!bytes) throw new Error(`${label}: missing image ${key}`); let asset=media.get(key); if(!asset) {asset={id:randomUUID(),mime:validateImage(bytes),data:bytes};media.set(key,asset)} result.push({type:'paragraph',content:[{type:'image',attrs:{src:`/api/media/${asset.id}`,alt:attr(node,'label')}}]}); continue; }
-      throw new Error(`${label}: unsupported content ${tag}`);
-    }
-    return {type:'doc',content:result.length?result:[{type:'paragraph'}]};
-  }
-  const questions=items.map(item=>{
-    const label=`${file} item ${attr(item,'ident') || '(unnamed)'}`;
-    const presentations=all(children(item),'presentation'), responses=all(children(item),'response_lid'), processing=all(children(item),'resprocessing');
-    if(presentations.length!==1 || responses.length!==1 || all(children(item),'response_str').length) throw new Error(`${label}: exactly one choice interaction is supported`);
-    const response=responses[0]; if(attr(response,'rcardinality').toLowerCase()!=='single') throw new Error(`${label}: only single-answer QTI 1.2 questions are currently supported`);
-    const renders=all(children(response),'render_choice'); if(renders.length!==1 || attr(renders[0],'shuffle').toLowerCase()==='yes') throw new Error(`${label}: unsupported choice settings`);
-    const labels=children(renders[0]).filter(n=>name(n)==='response_label');
-    if(children(renders[0]).some(n=>name(n) && name(n)!=='response_label')) throw new Error(`${label}: unsupported choice content`);
-    const choices=labels.map(n=>({id:randomUUID(),key:attr(n,'ident'),content:material(children(n),label)}));
-    if(choices.some(c=>!c.key) || new Set(choices.map(c=>c.key)).size!==choices.length) throw new Error(`${label}: invalid choice identifiers`);
-    if(processing.length!==1 || all(children(item),'itemfeedback').length) throw new Error(`${label}: explicit correct answer and supported scoring are required`);
-    const proc=processing[0], conditions=children(proc).filter(n=>name(n)==='respcondition'), outcomes=children(proc).filter(n=>name(n)==='outcomes');
-    if(conditions.length!==1 || outcomes.length!==1 || children(proc).some(n=>name(n) && !['outcomes','respcondition'].includes(name(n)))) throw new Error(`${label}: unsupported scoring`);
-    const declarations=children(outcomes[0]).filter(n=>name(n)==='decvar');
-    if(declarations.length!==1 || children(outcomes[0]).some(n=>name(n) && name(n)!=='decvar') || !['','0'].includes(attr(declarations[0],'defaultval')) || !['','score'].includes(attr(declarations[0],'varname').toLowerCase())) throw new Error(`${label}: unsupported score declaration`);
-    const cond=conditions[0], vars=children(cond).filter(n=>name(n)==='conditionvar'), sets=children(cond).filter(n=>name(n)==='setvar');
-    if(vars.length!==1 || sets.length!==1 || children(cond).some(n=>name(n) && !['conditionvar','setvar'].includes(name(n))) || !['','set'].includes(attr(sets[0],'action').toLowerCase()) || !['','score'].includes(attr(sets[0],'varname').toLowerCase()) || plain(children(sets[0])).trim()!=='1') throw new Error(`${label}: unsupported scoring`);
-    const checks=children(vars[0]).filter(n=>name(n)); if(checks.length!==1 || name(checks[0])!=='varequal' || attr(checks[0],'respident')!==attr(response,'ident') || attr(checks[0],'index') || attr(checks[0],'case').toLowerCase()==='no') throw new Error(`${label}: unsupported correct-answer condition`);
-    const answer=plain(children(checks[0])).trim(); const correct=choices.find(c=>c.key===answer); if(!correct) throw new Error(`${label}: invalid correct answer`);
-    const presentation=children(presentations[0]); const at=presentation.indexOf(response);
-    if(at<0 || presentation.slice(at+1).some(n=>name(n)) || presentation.slice(0,at).some(n=>name(n) && name(n)!=='material')) throw new Error(`${label}: unsupported presentation`);
-    if(children(item).some(n=>name(n) && !['itemmetadata','presentation','resprocessing'].includes(name(n)))) throw new Error(`${label}: unsupported item content`);
-    return validateQuestion({id:randomUUID(),type:'single',prompt:material(presentation.slice(0,at),label),choices:choices.map(({id,content})=>({id,content})),correctChoiceIds:[correct.id],explanation:{type:'doc',content:[{type:'paragraph'}]}});
-  });
-  return {name:(attr(assessments[0],'title') || 'Imported deck').slice(0,120),questions,media:[...media.values()]};
-}
 export function importQti(buffer: Buffer): {name:string;settings?:Settings;questions:Question[];media:{id:string;mime:string;data:Buffer}[]} {
   let zip:AdmZip; try { zip = new AdmZip(buffer); } catch { throw new Error('The file is not a valid ZIP package'); }
   const entries=zip.getEntries(); if (entries.length > 5000 || entries.reduce((sum,e)=>sum+e.header.size,0)>250*1024*1024) throw new Error('Package exceeds extraction limits');
   const files = new Map<string,Buffer>(); for (const entry of entries) { const key=safePath(entry.entryName); if (entry.isDirectory) continue; if (files.has(key) || entry.header.flags & 1 || (entry.header.attr >>> 16 & 0xf000) === 0xa000) throw new Error('Unsupported or duplicate archive entry'); files.set(key,entry.getData()); }
   const manifest=files.get('imsmanifest.xml'); if (!manifest) throw new Error('Package is missing imsmanifest.xml'); const manifestXml=parse(manifest.toString('utf8')); const resources=all(manifestXml,'resource');
   const itemResources=resources.filter(r => attr(r,'type') === 'imsqti_item_xmlv3p0'); const tests=resources.filter(r => attr(r,'type') === 'imsqti_test_xmlv3p0');
-  const legacy=resources.filter(r => attr(r,'type') === 'imsqti_xmlv1p2');
-  if (legacy.length) { if(legacy.length!==1 || itemResources.length || tests.length || resources.length!==1) throw new Error('Only one QTI 1.2 assessment resource is supported'); const file=safePath(attr(legacy[0],'href')); const data=files.get(file); if(!data) throw new Error('Missing QTI 1.2 assessment'); return importQti12(file,data,files); }
-  if (tests.length > 1) throw new Error('Package must contain at most one test');
-  if (!itemResources.length) throw new Error('Package contains no supported QTI 3 question resources');
-  if (itemResources.length > 1000) throw new Error('Package exceeds the limit of 1,000 questions');
+  if (tests.length > 1 || !itemResources.length || itemResources.length > 1000) throw new Error('Package must contain up to 1,000 choice questions and at most one test');
   let itemPaths=itemResources.map(r=>safePath(attr(r,'href'))); let title='Imported deck';
   if (tests.length) { const testPath=safePath(attr(tests[0],'href')); const testFile=files.get(testPath); if (!testFile) throw new Error('Missing assessment test'); const testXml=parse(testFile.toString('utf8')); const test=all(testXml,'qti-assessment-test')[0]; if (!test) throw new Error('Invalid QTI 3 test'); title=attr(test,'title') || title; if (all(testXml,'qti-assessment-section').length !== 1 || all(testXml,'qti-selection').length || all(testXml,'qti-ordering').length || all(testXml,'qti-branch-rule').length) throw new Error('Only a single flat assessment section without selection or branching is supported'); itemPaths=all(testXml,'qti-assessment-item-ref').map(r=>relativePath(testPath,attr(r,'href'))); if (itemPaths.length !== itemResources.length || new Set(itemPaths).size !== itemPaths.length || itemPaths.some(p=>!itemResources.some(r=>safePath(attr(r,'href')) === p))) throw new Error('Test references do not match the manifest'); }
   const media=new Map<string,{id:string;mime:string;data:Buffer}>(); for (const [file,data] of files) { if (!/\.(png|jpe?g|webp)$/i.test(file)) continue; media.set(file,{id:randomUUID(),mime:validateImage(data),data}); }

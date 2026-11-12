@@ -17,15 +17,6 @@ function question() { const a=randomUUID(),b=randomUUID();return {id:randomUUID(
 beforeAll(async()=>{const {default:app}=await import('./index');server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));const address=server.address();if(!address || typeof address==='string')throw new Error('No test port');base=`http://127.0.0.1:${address.port}`});
 afterAll(async()=>{await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));const {db}=await import('./store');db.close();if(path.dirname(directory)===os.tmpdir() && path.basename(directory).startsWith('quizlet-test-'))rmSync(directory,{recursive:true,force:true})});
 describe('personal study workflows',()=>{
-  it('imports a graded QTI 1.2 choice question and rejects missing scoring atomically',async()=>{
-    const archive=new AdmZip();
-    archive.addFile('imsmanifest.xml',Buffer.from('<manifest><resources><resource type="imsqti_xmlv1p2" href="assessment.xml"/></resources></manifest>'));
-    const assessment='<questestinterop><assessment title="Legacy"><section><item ident="Q1"><presentation><material><mattext>Pick one</mattext></material><response_lid ident="R" rcardinality="Single"><render_choice><response_label ident="A"><material><mattext>Yes</mattext></material></response_label><response_label ident="B"><material><mattext>No</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><outcomes><decvar defaultval="0"/></outcomes><respcondition><conditionvar><varequal respident="R">B</varequal></conditionvar><setvar action="Set">1</setvar></respcondition></resprocessing></item></section></assessment></questestinterop>';
-    archive.addFile('assessment.xml',Buffer.from(assessment));
-    const upload=async()=>{const form=new FormData();form.append('file',new Blob([new Uint8Array(archive.toBuffer())]),'legacy.zip');return fetch(`${base}/api/import`,{method:'POST',body:form});};
-    const imported=await upload();expect(imported.status).toBe(201);const deck=await imported.json();expect(deck.name).toBe('Legacy');expect(deck.questions[0].correctChoiceIds).toEqual([deck.questions[0].choices[1].id]);
-    const before=(await call('/decks')).data.length;archive.updateFile('assessment.xml',Buffer.from(assessment.replace(/<resprocessing>.*<\/resprocessing>/,'')));const rejected=await upload();expect(rejected.status).toBe(400);expect(JSON.stringify(await rejected.json())).toContain('explicit correct answer');expect((await call('/decks')).data.length).toBe(before);
-  });
   it('keeps randomized choices stable, preserves source identity, and deletes only completed history',async()=>{
     const deck=(await call('/decks','POST',{name:'Choice order'})).data;const q=question();
     const third=randomUUID();q.choices.push({id:third,content:textDoc('Maybe')});

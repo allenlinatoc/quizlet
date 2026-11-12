@@ -8,7 +8,10 @@ const migrations = [
   `CREATE TABLE pdf_jobs (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL, pdf BLOB NOT NULL);
    CREATE TABLE pdf_job_media (id TEXT PRIMARY KEY, job_id TEXT NOT NULL REFERENCES pdf_jobs(id) ON DELETE CASCADE, mime TEXT NOT NULL, data BLOB NOT NULL);`,
   `CREATE TABLE pdf_job_extractions (job_id TEXT NOT NULL REFERENCES pdf_jobs(id) ON DELETE CASCADE, page INTEGER NOT NULL, state TEXT NOT NULL, task_id TEXT, text TEXT, PRIMARY KEY(job_id,page));`,
-  `CREATE TABLE excel_import_receipts (request_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL, deck_id TEXT NOT NULL, question_count INTEGER NOT NULL, created_at TEXT NOT NULL);`
+  `CREATE TABLE excel_import_receipts (request_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL, deck_id TEXT NOT NULL, question_count INTEGER NOT NULL, created_at TEXT NOT NULL);`,
+  `CREATE TABLE assessment_packages (id TEXT PRIMARY KEY, version INTEGER NOT NULL, sha256 TEXT NOT NULL UNIQUE, data TEXT NOT NULL, source BLOB NOT NULL);
+   CREATE TABLE assessment_resources (package_id TEXT NOT NULL REFERENCES assessment_packages(id) ON DELETE CASCADE, path TEXT NOT NULL, sha256 TEXT NOT NULL, data BLOB NOT NULL, PRIMARY KEY(package_id,path));
+   CREATE TABLE assessment_attempts (id TEXT PRIMARY KEY, package_id TEXT NOT NULL REFERENCES assessment_packages(id), version INTEGER NOT NULL, status TEXT NOT NULL, data TEXT NOT NULL);`
 ];
 
 export function migrate(db: Database.Database) {

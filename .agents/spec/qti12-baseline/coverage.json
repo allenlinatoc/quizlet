@@ -1,0 +1,1142 @@
+{
+  "version": "QTI 1.2 Final",
+  "complete": false,
+  "elements": [
+    {
+      "name": "questestinterop",
+      "grammar": "(qticomment? , (objectbank | assessment | (section | item)+))",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_computerscored",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_feedbackpermitted",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_hintspermitted",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_itemtype",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_maximumscore",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_renderingtype",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_responsetype",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_scoringpermitted",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_solutionspermitted",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_status",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_timedependence",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_timelimit",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_toolvendor",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_topic",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_material",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_typeofsolution",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_levelofdifficulty",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qmd_weighting",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qtimetadata",
+      "grammar": "(vocabulary? , qtimetadatafield+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "vocabulary",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qtimetadatafield",
+      "grammar": "(fieldlabel , fieldentry)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "fieldlabel",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "fieldentry",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "qticomment",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "material",
+      "grammar": "(qticomment? , (mattext | matemtext | matimage | mataudio | matvideo | matapplet | matapplication | matref | matbreak | mat_extension)+ , altmaterial*)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "mattext",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "matemtext",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "matimage",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "mataudio",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "matvideo",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "matapplet",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "matapplication",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "matbreak",
+      "grammar": "EMPTY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "matref",
+      "grammar": "EMPTY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "material_ref",
+      "grammar": "EMPTY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "altmaterial",
+      "grammar": "(qticomment? , (mattext | matemtext | matimage | mataudio | matvideo | matapplet | matapplication | matref | matbreak | mat_extension)+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "decvar",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "setvar",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "interpretvar",
+      "grammar": "(material | material_ref)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "conditionvar",
+      "grammar": "(not | and | or | unanswered | other | varequal | varlt | varlte | vargt | vargte | varsubset | varinside | varsubstring | durequal | durlt | durlte | durgt | durgte | var_extension)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "not",
+      "grammar": "(and | or | not | unanswered | other | varequal | varlt | varlte | vargt | vargte | varsubset | varinside | varsubstring | durequal | durlt | durlte | durgt | durgte)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "and",
+      "grammar": "(not | and | or | unanswered | other | varequal | varlt | varlte | vargt | vargte | varsubset | varinside | varsubstring | durequal | durlt | durlte | durgt | durgte)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "or",
+      "grammar": "(not | and | or | unanswered | other | varequal | varlt | varlte | vargt | vargte | varsubset | varinside | varsubstring | durequal | durlt | durlte | durgt | durgte)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "varequal",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "varlt",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "varlte",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "vargt",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "vargte",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "varsubset",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "varinside",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "varsubstring",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "durequal",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "durlt",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "durlte",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "durgt",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "durgte",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "unanswered",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "other",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "duration",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "displayfeedback",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "objectives",
+      "grammar": "(qticomment? , (material+ | flow_mat+))",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "rubric",
+      "grammar": "(qticomment? , (material+ | flow_mat+))",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "flow_mat",
+      "grammar": "(flow_mat | material | material_ref)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "presentation_material",
+      "grammar": "(qticomment? , flow_mat+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "reference",
+      "grammar": "(qticomment | material | mattext | matemtext | matimage | mataudio | matvideo | matapplet | matapplication | matbreak | mat_extension)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "selection_ordering",
+      "grammar": "(qticomment? , sequence_parameter? , selection* , order?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "outcomes_processing",
+      "grammar": "(qticomment? , outcomes , objects_condition* , processing_parameter* , map_output* , outcomes_feedback_test*)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "mat_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "var_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "response_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "render_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "assessproc_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "sectionproc_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "itemproc_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "respcond_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "selection_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "objectscond_extension",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "order_extension",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "objectbank",
+      "grammar": "(qticomment? , qtimetadata* , (section | item)+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "assessment",
+      "grammar": "(qticomment? , duration? , qtimetadata* , objectives* , assessmentcontrol* , rubric* , presentation_material? , outcomes_processing* , assessproc_extension? , assessfeedback* , selection_ordering? , reference? , (sectionref | section)+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "assessmentcontrol",
+      "grammar": "(qticomment?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "assessfeedback",
+      "grammar": "(qticomment? , (material+ | flow_mat+))",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "sectionref",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "section",
+      "grammar": "(qticomment? , duration? , qtimetadata* , objectives* , sectioncontrol* , sectionprecondition* , sectionpostcondition* , rubric* , presentation_material? , outcomes_processing* , sectionproc_extension? , sectionfeedback* , selection_ordering? , reference? , (itemref | item | sectionref | section)*)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "sectionprecondition",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "sectionpostcondition",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "sectioncontrol",
+      "grammar": "(qticomment?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "itemref",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "sectionfeedback",
+      "grammar": "(qticomment? , (material+ | flow_mat+))",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "item",
+      "grammar": "(qticomment? , duration? , itemmetadata? , objectives* , itemcontrol* , itemprecondition* , itempostcondition* , (itemrubric | rubric)* , presentation? , resprocessing* , itemproc_extension? , itemfeedback* , reference?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "itemmetadata",
+      "grammar": "(qtimetadata* , qmd_computerscored? , qmd_feedbackpermitted? , qmd_hintspermitted? , qmd_itemtype? , qmd_levelofdifficulty? , qmd_maximumscore? , qmd_renderingtype* , qmd_responsetype* , qmd_scoringpermitted? , qmd_solutionspermitted? , qmd_status? , qmd_timedependence? , qmd_timelimit? , qmd_toolvendor? , qmd_topic? , qmd_weighting? , qmd_material* , qmd_typeofsolution?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "itemcontrol",
+      "grammar": "(qticomment?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "itemprecondition",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "itempostcondition",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "itemrubric",
+      "grammar": "(material)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "presentation",
+      "grammar": "(qticomment? , (flow | (material | response_lid | response_xy | response_str | response_num | response_grp | response_extension)+))",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "flow",
+      "grammar": "(flow | material | material_ref | response_lid | response_xy | response_str | response_num | response_grp | response_extension)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "response_lid",
+      "grammar": "((material | material_ref)? , (render_choice | render_hotspot | render_slider | render_fib | render_extension) , (material | material_ref)?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "response_xy",
+      "grammar": "((material | material_ref)? , (render_choice | render_hotspot | render_slider | render_fib | render_extension) , (material | material_ref)?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "response_str",
+      "grammar": "((material | material_ref)? , (render_choice | render_hotspot | render_slider | render_fib | render_extension) , (material | material_ref)?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "response_num",
+      "grammar": "((material | material_ref)? , (render_choice | render_hotspot | render_slider | render_fib | render_extension) , (material | material_ref)?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "response_grp",
+      "grammar": "((material | material_ref)? , (render_choice | render_hotspot | render_slider | render_fib | render_extension) , (material | material_ref)?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "response_label",
+      "grammar": "(#PCDATA | qticomment | material | material_ref | flow_mat)*",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "flow_label",
+      "grammar": "(flow_label | response_label)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "response_na",
+      "grammar": "ANY",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "render_choice",
+      "grammar": "((material | material_ref | response_label | flow_label)* , response_na?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "render_hotspot",
+      "grammar": "((material | material_ref | response_label | flow_label)* , response_na?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "render_slider",
+      "grammar": "((material | material_ref | response_label | flow_label)* , response_na?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "render_fib",
+      "grammar": "((material | material_ref | response_label | flow_label)* , response_na?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "resprocessing",
+      "grammar": "(qticomment? , outcomes , (respcondition | itemproc_extension)+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "outcomes",
+      "grammar": "(qticomment? , (decvar , interpretvar*)+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "respcondition",
+      "grammar": "(qticomment? , conditionvar , setvar* , displayfeedback* , respcond_extension?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "itemfeedback",
+      "grammar": "((flow_mat | material) | solution | hint)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "solution",
+      "grammar": "(qticomment? , solutionmaterial+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "solutionmaterial",
+      "grammar": "(material+ | flow_mat+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "hint",
+      "grammar": "(qticomment? , hintmaterial+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "hintmaterial",
+      "grammar": "(material+ | flow_mat+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "selection",
+      "grammar": "(sourcebank_ref? , selection_number? , selection_metadata? , (and_selection | or_selection | not_selection | selection_extension)?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "order",
+      "grammar": "(order_extension?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "selection_number",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "selection_metadata",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "sequence_parameter",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "sourcebank_ref",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "and_selection",
+      "grammar": "(selection_metadata | and_selection | or_selection | not_selection)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "or_selection",
+      "grammar": "(selection_metadata | and_selection | or_selection | not_selection)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "not_selection",
+      "grammar": "(selection_metadata | and_selection | or_selection | not_selection)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "objects_condition",
+      "grammar": "(qticomment? , (outcomes_metadata | and_objects | or_objects | not_objects)? , objects_parameter* , map_input* , objectscond_extension?)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "map_output",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "map_input",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "outcomes_feedback_test",
+      "grammar": "(test_variable , displayfeedback+)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "outcomes_metadata",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "and_objects",
+      "grammar": "(outcomes_metadata | and_objects | or_objects | not_objects)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "or_objects",
+      "grammar": "(outcomes_metadata | and_objects | or_objects | not_objects)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "not_objects",
+      "grammar": "(outcomes_metadata | and_objects | or_objects | not_objects)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "test_variable",
+      "grammar": "(variable_test | and_test | or_test | not_test)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "processing_parameter",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "and_test",
+      "grammar": "(variable_test | and_test | or_test | not_test)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "or_test",
+      "grammar": "(variable_test | and_test | or_test | not_test)+",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "not_test",
+      "grammar": "(variable_test | and_test | or_test | not_test)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "variable_test",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    },
+    {
+      "name": "objects_parameter",
+      "grammar": "(#PCDATA)",
+      "parse": "preserved",
+      "delivery": "unverified",
+      "processing": "unverified",
+      "tests": []
+    }
+  ]
+}
