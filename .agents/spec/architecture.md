@@ -11,16 +11,22 @@ Quizlet is a single-user local web application. The React and TypeScript SPA is 
 - SQLite, accessed through `better-sqlite3`, stores each deck and immutable session snapshot as JSON records, and stores image blobs in a media table. Versioned migrations use SQLite's `user_version`; foreign keys, WAL and busy handling are enabled. Uploaded media is retained so completed snapshots remain readable.
 - One active session per deck is enforced by a partial unique index. The server snapshots question content, ordering and settings, evaluates each locked response and persists progress. Results survive deck edits and deletion. Only completed results expose answer keys independently of feedback settings.
 - A backup command uses SQLite's online backup API to copy the database, including media and results, consistently.
+- Session snapshots retain a source-deck ID separately from the live deck reference. Legacy detached results are grouped without guessing identity. Choice order is selected independently of question order and stored in each session snapshot. Old JSON records and version-1 QTI metadata default missing choice-order settings to arranged.
+- History filters and sort state are encoded in SPA URLs. The Light/Dark theme preference is stored in browser local storage and initialized before React renders; theme styles also cover PDF and Excel workflows.
 
 ## API
 
-The `/api` JSON interface covers deck and question CRUD, complete question-order replacement, media upload/read, session start/read/navigation/response/complete/abandon, and completed result list/read. QTI import accepts multipart uploads and export returns a ZIP. Errors use `{ error: { code, message } }`. The SPA uses history paths for deck, editor, session and result views; the server falls back to the SPA for non-API routes.
+The `/api` JSON interface covers deck and question CRUD, complete question-order replacement, media upload/read, session start/read/navigation/response/complete/abandon, and completed result list/read/delete. Result deletion only removes a completed session; media remains available to other snapshots. QTI import accepts multipart uploads and export returns a ZIP. Errors use `{ error: { code, message } }`. The SPA uses history paths for deck, editor, session and result views; the server falls back to the SPA for non-API routes.
 
 ## QTI boundary
 
 The adapter supports a bounded QTI 3 profile rather than the complete specification: a single flat test section or item collection, one choice interaction per item, identifier responses and `match_correct` scoring. It maps the supported rich content, local raster media, presentation MathML and one general explanation. Exports include a manifest-declared versioned Quizlet settings file. Existing-deck imports preserve settings unless explicitly told to apply imported settings. Invalid or unsupported packages fail before deck changes are committed.
 
 The parser disables DTD/entity declarations, rejects archive traversal and external media references, and applies file, image and expansion limits. This profile has not been certified and does not claim general interoperability. See the README for the supported subset and restrictions.
+
+## Excel question import
+
+The library and deck views offer an Excel import dialog and a static workbook template. The server checks ZIP expansion and workbook limits, validates the `Questions` sheet and maps plain-text cells into the existing question model. Preview never changes a deck. Commit revalidates the workbook and appends questions or creates a deck in a transaction. A receipt stored in SQLite makes a retry with the same request ID repeat-safe; receipts persist with the database and backups. Excel parsing stays on the server.
 
 ## Verification and operations
 

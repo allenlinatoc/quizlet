@@ -1,0 +1,29 @@
+:root { --page:#f8f9fd; --surface:#fff; --surface-alt:#f6f3ff; --text:#222337; --muted:#676779; --border:#dedeea; --accent:#715bd4; --score-accent:#8570df; --score-track:#edeaf7; }
+.theme-control { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; font-weight:700; }
+.theme-control select,.history-filters select { color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px; }
+.history-filters { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:0 0 20px; }
+.history-filters label { display:grid; gap:6px; color:var(--muted); font-size:12px; font-weight:700; }
+.history-filters select { min-width:145px; }
+.history-note { color:var(--muted); margin-bottom:12px; }
+.history-open { border:0; background:none; text-align:left; cursor:pointer; padding:0; }
+.history-actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.history-actions>span { color:var(--muted); font-size:12px; }
+.result-header { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+.result-header .back-link { margin:0; }
+:root[data-theme=dark] { --page:#181827; --surface:#252638; --surface-alt:#303047; --text:#f1f0fa; --muted:#c1bfd2; --border:#4c4a60; --accent:#b7a8ff; --score-accent:#a897ff; --score-track:#45435c; color:var(--text); background:var(--page); }
+[data-theme=dark] body { color:var(--text); background:var(--page); }
+[data-theme=dark] .sidebar,[data-theme=dark] .topbar,[data-theme=dark] .overview-card,[data-theme=dark] .empty-state,[data-theme=dark] .deck-card:not(.add-card),[data-theme=dark] .recent-strip,[data-theme=dark] .question-row,[data-theme=dark] .settings-panel,[data-theme=dark] .form-card,[data-theme=dark] .play-card,[data-theme=dark] .review-card,[data-theme=dark] .result-hero,[data-theme=dark] .history-row,[data-theme=dark] .excel-dialog { background:var(--surface); border-color:var(--border); color:var(--text); }
+[data-theme=dark] .sidebar-bottom,[data-theme=dark] .editor-tips,[data-theme=dark] .pdf-figure,[data-theme=dark] .explanation,[data-theme=dark] .submitted-note { background:var(--surface-alt); border-color:var(--border); color:var(--muted); }
+[data-theme=dark] .secondary,[data-theme=dark] .setting-row select,[data-theme=dark] .type-tabs button,[data-theme=dark] .answer-option,[data-theme=dark] .question-nav button,[data-theme=dark] .pdf-tool input:not([type=checkbox]):not([type=radio]):not([type=file]),[data-theme=dark] .pdf-tool select,[data-theme=dark] .excel-dialog input[type=text],[data-theme=dark] .excel-dialog input:not([type]),[data-theme=dark] .correct-selector,[data-theme=dark] .answer-indicator { background:var(--surface-alt); border-color:var(--border); color:var(--text); }
+[data-theme=dark] .type-tabs button.selected,[data-theme=dark] .answer-option.picked,[data-theme=dark] .answer-option:hover:not(:disabled),[data-theme=dark] .choice-editor.correct-choice,[data-theme=dark] .sidebar nav button.nav-active,[data-theme=dark] .sidebar nav button:hover { background:#45405f; border-color:#9988d6; color:#e5dfff; }
+[data-theme=dark] .correct-selector[aria-pressed=true],[data-theme=dark] .answer-option.picked .answer-indicator { background:#806bdc; color:white; }
+[data-theme=dark] .score-ring>div { background:var(--surface); }
+[data-theme=dark] .question-preview,[data-theme=dark] .field-label,[data-theme=dark] .history-name strong,[data-theme=dark] .top-crumb b,[data-theme=dark] .review-choice { color:var(--text); }
+[data-theme=dark] .page-heading p,[data-theme=dark] .editor-heading p,[data-theme=dark] .deck-title p,[data-theme=dark] .play-header p,[data-theme=dark] .section-title p,[data-theme=dark] .panel-heading p,[data-theme=dark] .history-name span,[data-theme=dark] .history-score span,[data-theme=dark] .empty-state p,[data-theme=dark] .setting-row small,[data-theme=dark] .result-hero>p,[data-theme=dark] .result-stats span,[data-theme=dark] .score-ring span,[data-theme=dark] .top-crumb,[data-theme=dark] .back-link,[data-theme=dark] .sidebar nav button,[data-theme=dark] .question-preview small,[data-theme=dark] .field-hint,[data-theme=dark] .optional,[data-theme=dark] .deck-card p,[data-theme=dark] .deck-card-foot,[data-theme=dark] .recent-strip p,[data-theme=dark] .local-indicator,[data-theme=dark] .import-setting,[data-theme=dark] .overview-card small,[data-theme=dark] .overview-card span { color:var(--muted); }
+[data-theme=dark] .text-button,[data-theme=dark] h1 em,[data-theme=dark] .eyebrow,[data-theme=dark] .question-tag,[data-theme=dark] .history-score strong,[data-theme=dark] .explanation strong { color:var(--accent); }
+[data-theme=dark] .rich-editor,[data-theme=dark] .rich-toolbar,[data-theme=dark] .choice-editor,[data-theme=dark] .setting-row,[data-theme=dark] .review-choice,[data-theme=dark] .question-nav,[data-theme=dark] .result-stats>div { border-color:var(--border); }
+[data-theme=dark] .editor-body,[data-theme=dark] .tiptap { color:var(--text); }
+[data-theme=dark] .error-banner { background:#542e3a; color:#ffccd0; border-color:#a65d68; }
+[data-theme=dark] .feedback-correct,[data-theme=dark] .review-status.right,[data-theme=dark] .answer-option.answer-correct { background:#204b39; color:#b5ebc9; border-color:#5ca17b; }
+[data-theme=dark] .feedback-wrong,[data-theme=dark] .review-status.wrong,[data-theme=dark] .pdf-flag { background:#5a3d2f; color:#ffdfb9; }
+@media(max-width:700px) { .top-right { gap:8px; } .top-crumb { font-size:10px; } .theme-control { gap:4px; } .theme-control select { padding:6px; } .avatar { display:none; } .history-row { flex-wrap:wrap; } .history-actions { width:100%; justify-content:flex-end; } .result-header { flex-wrap:wrap; } }

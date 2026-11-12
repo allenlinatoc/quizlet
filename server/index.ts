@@ -3,23 +3,25 @@ import multer from 'multer';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { z, ZodError } from 'zod';
-import { db, getDeck, getSession, listDecks, listSessions, putDeck, putSession } from './store';
+import { db, deleteResult, getDeck, getSession, listDecks, listSessions, putDeck, putSession } from './store';
 import { isCorrect, publicSession, shuffle, validateQuestion } from './domain';
 import { defaultSettings, type Deck, type Session } from '../shared/types';
 import { exportQti, importQti } from './qti';
 import { validateImage } from './media';
 import pdfJobs from './pdf-jobs';
+import excelImport from './excel-routes';
 
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024, files: 1 } });
-const settingsSchema = z.object({ order: z.enum(['arranged','random']), showAnswers: z.boolean(), showPoints: z.boolean() });
+const settingsSchema = z.object({ order: z.enum(['arranged','random']), choiceOrder: z.enum(['arranged','random']).default('arranged'), showAnswers: z.boolean(), showPoints: z.boolean() });
 class HttpError extends Error { constructor(public status: number, message: string) { super(message); } }
 const requireDeck = (id: string) => { const deck = getDeck(id); if (!deck) throw new HttpError(404, 'Deck not found'); return deck; };
 const requireSession = (id: string) => { const session = getSession(id); if (!session) throw new HttpError(404, 'Session not found'); return session; };
 const active = (s: Session) => { if (s.status !== 'active') throw new HttpError(409, 'This session has already ended'); };
 const now = () => new Date().toISOString();
 app.use('/api/pdf-jobs', pdfJobs);
+app.use('/api/excel-import', excelImport);
 let listener: ReturnType<typeof app.listen> | undefined;
 if (process.env.QUIZLET_TEST_SHUTDOWN_TOKEN) app.post('/api/test-shutdown', (req,res) => { if (req.get('authorization') !== `Bearer ${process.env.QUIZLET_TEST_SHUTDOWN_TOKEN}`) throw new HttpError(404, 'API route not found'); res.on('finish',()=>listener?.close()); res.status(204).end(); });
 
@@ -32,14 +34,15 @@ app.post('/api/decks/:id/questions', (req, res) => { const deck = requireDeck(re
 app.put('/api/decks/:id/questions/:questionId', (req, res) => { const deck = requireDeck(req.params.id); const index = deck.questions.findIndex(q => q.id === req.params.questionId); if (index < 0) throw new HttpError(404, 'Question not found'); const q = validateQuestion(req.body); if (q.id !== req.params.questionId) throw new HttpError(400, 'Question ID does not match'); deck.questions[index] = q; putDeck(deck); res.json(q); });
 app.delete('/api/decks/:id/questions/:questionId', (req, res) => { const deck = requireDeck(req.params.id); if (!deck.questions.some(q => q.id === req.params.questionId)) throw new HttpError(404, 'Question not found'); deck.questions = deck.questions.filter(q => q.id !== req.params.questionId); putDeck(deck); res.status(204).end(); });
 app.put('/api/decks/:id/order', (req, res) => { const deck = requireDeck(req.params.id); const ids = z.object({ ids:z.array(z.string().uuid()) }).parse(req.body).ids; if (ids.length !== deck.questions.length || new Set(ids).size !== ids.length || ids.some(id => !deck.questions.some(q => q.id === id))) throw new HttpError(400, 'Order must contain each question exactly once'); deck.questions = ids.map(id => deck.questions.find(q => q.id === id)!); putDeck(deck); res.json(deck); });
-app.post('/api/decks/:id/sessions', (req, res) => { const deck = requireDeck(req.params.id); if (!deck.questions.length) throw new HttpError(400, 'Add a question before starting a session'); const old = listSessions().find(s => s.deckId === deck.id && s.status === 'active'); if (old && !req.body?.restart) throw new HttpError(409, 'Resume or abandon the active session first'); const session: Session = { id:randomUUID(), deckId:deck.id, deckName:deck.name, status:'active', settings:deck.settings, questions:deck.settings.order === 'random' ? shuffle(deck.questions) : deck.questions, responses:[], cursor:0, startedAt:now() }; db.transaction(() => { if (old) { old.status = 'abandoned'; putSession(old); } putSession(session); })(); res.status(201).json(publicSession(session)); });
+app.post('/api/decks/:id/sessions', (req, res) => { const deck = requireDeck(req.params.id); if (!deck.questions.length) throw new HttpError(400, 'Add a question before starting a session'); const old = listSessions().find(s => s.deckId === deck.id && s.status === 'active'); if (old && !req.body?.restart) throw new HttpError(409, 'Resume or abandon the active session first'); const questions = deck.questions.map(q => ({...q, choices:deck.settings.choiceOrder === 'random' ? shuffle(q.choices) : [...q.choices]})); const session: Session = { id:randomUUID(), deckId:deck.id, sourceDeckId:deck.id, deckName:deck.name, status:'active', settings:{...deck.settings}, questions:deck.settings.order === 'random' ? shuffle(questions) : questions, responses:[], cursor:0, startedAt:now() }; db.transaction(() => { if (old) { old.status = 'abandoned'; putSession(old); } putSession(session); })(); res.status(201).json(publicSession(session)); });
 app.get('/api/sessions/:id', (req, res) => { const s = requireSession(req.params.id); if (s.status !== 'active') throw new HttpError(409, 'This session has ended'); res.json(publicSession(s)); });
 app.patch('/api/sessions/:id', (req, res) => { const s = requireSession(req.params.id); active(s); const { cursor } = z.object({ cursor:z.number().int().min(0).max(s.questions.length - 1) }).parse(req.body); s.cursor = cursor; putSession(s); res.json(publicSession(s)); });
 app.post('/api/sessions/:id/responses', (req, res) => { const s = requireSession(req.params.id); active(s); const input = z.object({ questionId:z.string().uuid(), choiceIds:z.array(z.string().uuid()).min(1) }).parse(req.body); const q = s.questions.find(q => q.id === input.questionId); if (!q || new Set(input.choiceIds).size !== input.choiceIds.length || input.choiceIds.some(id => !q.choices.some(c => c.id === id)) || (q.type !== 'multiple' && input.choiceIds.length !== 1)) throw new HttpError(400, 'Invalid answer'); const prior = s.responses.find(r => r.questionId === q.id); if (prior) { if (prior.choiceIds.length !== input.choiceIds.length || prior.choiceIds.some(id => !input.choiceIds.includes(id))) throw new HttpError(409, 'This answer is locked'); } else { s.responses.push({ ...input, correct:isCorrect(q, input.choiceIds) }); putSession(s); } res.json(publicSession(s)); });
 app.post('/api/sessions/:id/complete', (req, res) => { const s = requireSession(req.params.id); if (s.status === 'completed') return res.json(s); active(s); if (s.responses.length < s.questions.length && req.body?.confirmUnanswered !== true) throw new HttpError(409, 'Confirm that unanswered questions will receive zero points'); s.status = 'completed'; s.completedAt = now(); putSession(s); res.json(s); });
 app.post('/api/sessions/:id/abandon', (req, res) => { const s = requireSession(req.params.id); active(s); s.status = 'abandoned'; putSession(s); res.status(204).end(); });
-app.get('/api/results', (_req, res) => res.json(listSessions().filter(s => s.status === 'completed').map(s => ({ id:s.id, deckName:s.deckName, startedAt:s.startedAt, completedAt:s.completedAt, points:s.responses.filter(r => r.correct).length, total:s.questions.length }))));
+app.get('/api/results', (_req, res) => res.json(listSessions().filter(s => s.status === 'completed').map(s => ({ id:s.id, deckId:s.deckId, sourceDeckId:s.sourceDeckId ?? null, deckName:s.deckName, startedAt:s.startedAt, completedAt:s.completedAt, points:s.responses.filter(r => r.correct).length, total:s.questions.length }))));
 app.get('/api/results/:id', (req, res) => { const s = requireSession(req.params.id); if (s.status !== 'completed') throw new HttpError(404, 'Result not found'); res.json(s); });
+app.delete('/api/results/:id', (req, res) => { if (!deleteResult(req.params.id)) throw new HttpError(404, 'Result not found'); res.status(204).end(); });
 app.post('/api/media', upload.single('file'), (req, res) => { const file = req.file; if (!file) throw new HttpError(400, 'Choose an image under 10 MiB'); const mime=validateImage(file.buffer); const id = randomUUID(); db.prepare('INSERT INTO media VALUES (?,?,?)').run(id,mime,file.buffer); res.status(201).json({ id, url:`/api/media/${id}` }); });
 app.get('/api/media/:id', (req, res) => { const row = db.prepare('SELECT mime,data FROM media WHERE id=?').get(req.params.id) as { mime:string; data:Buffer } | undefined; if (!row) throw new HttpError(404, 'Image not found'); res.set('Content-Type',row.mime).set('X-Content-Type-Options','nosniff').send(row.data); });
 app.get('/api/decks/:id/export', (req, res) => { const deck = requireDeck(req.params.id); if (!deck.questions.length) throw new HttpError(400, 'Add a question before exporting'); const data = exportQti(deck); res.set('Content-Type','application/zip').set('Content-Disposition',`attachment; filename="quizlet-deck.zip"`).send(data); });

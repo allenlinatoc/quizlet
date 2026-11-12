@@ -7,7 +7,8 @@ const migrations = [
    CREATE TABLE media (id TEXT PRIMARY KEY, mime TEXT NOT NULL, data BLOB NOT NULL);`,
   `CREATE TABLE pdf_jobs (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL, pdf BLOB NOT NULL);
    CREATE TABLE pdf_job_media (id TEXT PRIMARY KEY, job_id TEXT NOT NULL REFERENCES pdf_jobs(id) ON DELETE CASCADE, mime TEXT NOT NULL, data BLOB NOT NULL);`,
-  `CREATE TABLE pdf_job_extractions (job_id TEXT NOT NULL REFERENCES pdf_jobs(id) ON DELETE CASCADE, page INTEGER NOT NULL, state TEXT NOT NULL, task_id TEXT, text TEXT, PRIMARY KEY(job_id,page));`
+  `CREATE TABLE pdf_job_extractions (job_id TEXT NOT NULL REFERENCES pdf_jobs(id) ON DELETE CASCADE, page INTEGER NOT NULL, state TEXT NOT NULL, task_id TEXT, text TEXT, PRIMARY KEY(job_id,page));`,
+  `CREATE TABLE excel_import_receipts (request_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL, deck_id TEXT NOT NULL, question_count INTEGER NOT NULL, created_at TEXT NOT NULL);`
 ];
 
 export function migrate(db: Database.Database) {

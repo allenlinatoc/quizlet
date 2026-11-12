@@ -22,7 +22,11 @@ Data is stored in `data/quizlet.sqlite` by default, including uploaded images. S
 
 Create a deck and add single-answer, multiple-answer or true/false questions. Question prompts, choices and optional explanations support basic formatting, PNG/JPEG/WebP images and LaTeX formulas. Mark the correct choices, and use the arrow controls or drag a question to arrange the deck.
 
-Each question is worth one point. Multiple-answer questions require the entire correct set. You can skip questions and return to them, resume an unfinished attempt, or finish early after confirming that unanswered questions earn zero points. The deck settings control question order, immediate answer feedback and running points. Completed sessions retain a snapshot for later review, even after the source deck is edited or deleted.
+Each question is worth one point. Multiple-answer questions require the entire correct set. You can skip questions and return to them, resume an unfinished attempt, or finish early after confirming that unanswered questions earn zero points. Deck settings control question order, answer-choice order, immediate answer feedback and running points. Randomised choice order is fixed for each session, including its result review. Completed sessions retain a snapshot for later review, even after the source deck is edited or deleted.
+
+Study history can be filtered by deck, completion date and score, and sorted. Open a result or its source deck from the list, or delete an individual result after confirmation. Result pages link back to history filtered for that deck. Older results whose deleted source deck can no longer be identified appear under Older deleted decks.
+
+Use the Theme selector in the top bar to choose Light or Dark. The choice is stored in this browser; Light is the default.
 
 ## Create decks from PDFs
 
@@ -44,9 +48,13 @@ Use a trusted service bound to loopback, and keep Redis and Ollama inaccessible 
 
 PDF jobs, source PDFs and draft figures are stored in the SQLite database and included in backups. Deleting a job removes its source and drafts; figures in published decks remain. PDFs are limited to 250 MiB and 2,000 pages, with up to 20 separate answer-key pages. Password-protected or damaged files cannot be processed. Review source references, answer keys, formulas and images: extraction and generated answers can be inaccurate.
 
+## Import questions from Excel
+
+Choose **Import Excel** in the library to create a deck, or on a deck to append questions. Download the template from the dialog, enter one question per row on its `Questions` sheet, and upload the saved `.xlsx` file. Preview the rows and fix any reported errors before importing. The template supports single-answer, multiple-answer and true/false questions with two to six plain-text choices. It includes examples on a separate Instructions sheet. Workbooks are limited to 10 MiB and 1,000 questions; formulas, rich text and embedded media are not imported.
+
 ## QTI import and export
 
-The app supports a **subset of QTI 3 ZIP packages**: a single flat assessment section or an item collection, with choice interactions, explicit correct choices and `match_correct` scoring. Text, supported formatting, packaged PNG/JPEG/WebP images, supported presentation MathML and one general explanation are supported. Exports include arranged question order and a versioned `quizlet-settings.json` file with the deck settings. Other applications may ignore that file. This implementation has not been certified by 1EdTech.
+The app supports a **subset of QTI 3 ZIP packages**: a single flat assessment section or an item collection, with choice interactions, explicit correct choices and `match_correct` scoring. Text, supported formatting, packaged PNG/JPEG/WebP images, supported presentation MathML and one general explanation are supported. Exports include arranged question and choice order and a versioned `quizlet-settings.json` file with the deck settings, including the Quizlet session choice-order preference. Other applications may ignore that file. This implementation has not been certified by 1EdTech.
 
 Importing from the library creates a deck. Importing into a deck appends questions and keeps its settings unless **Apply settings from imported Quizlet packages** is selected. Import is transactional: an invalid or unsupported package reports an error without changing the destination. Unsupported examples include QTI 2.x, custom scoring, multiple sections, choice shuffling, conditional feedback and other interaction types. Media paths must be local to the package; external URLs and XML entity declarations are rejected.
 

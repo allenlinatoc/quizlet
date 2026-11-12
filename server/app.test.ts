@@ -5,6 +5,8 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { Server } from 'node:http';
 import AdmZip from 'adm-zip';
+import ExcelJS from 'exceljs';
+import { parseExcel } from './excel-import';
 import { textDoc, emptyDoc, type Deck } from '../shared/types';
 
 const directory = mkdtempSync(path.join(os.tmpdir(), 'quizlet-test-'));
@@ -15,6 +17,89 @@ function question() { const a=randomUUID(),b=randomUUID();return {id:randomUUID(
 beforeAll(async()=>{const {default:app}=await import('./index');server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));const address=server.address();if(!address || typeof address==='string')throw new Error('No test port');base=`http://127.0.0.1:${address.port}`});
 afterAll(async()=>{await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));const {db}=await import('./store');db.close();if(path.dirname(directory)===os.tmpdir() && path.basename(directory).startsWith('quizlet-test-'))rmSync(directory,{recursive:true,force:true})});
 describe('personal study workflows',()=>{
+  it('imports a graded QTI 1.2 choice question and rejects missing scoring atomically',async()=>{
+    const archive=new AdmZip();
+    archive.addFile('imsmanifest.xml',Buffer.from('<manifest><resources><resource type="imsqti_xmlv1p2" href="assessment.xml"/></resources></manifest>'));
+    const assessment='<questestinterop><assessment title="Legacy"><section><item ident="Q1"><presentation><material><mattext>Pick one</mattext></material><response_lid ident="R" rcardinality="Single"><render_choice><response_label ident="A"><material><mattext>Yes</mattext></material></response_label><response_label ident="B"><material><mattext>No</mattext></material></response_label></render_choice></response_lid></presentation><resprocessing><outcomes><decvar defaultval="0"/></outcomes><respcondition><conditionvar><varequal respident="R">B</varequal></conditionvar><setvar action="Set">1</setvar></respcondition></resprocessing></item></section></assessment></questestinterop>';
+    archive.addFile('assessment.xml',Buffer.from(assessment));
+    const upload=async()=>{const form=new FormData();form.append('file',new Blob([new Uint8Array(archive.toBuffer())]),'legacy.zip');return fetch(`${base}/api/import`,{method:'POST',body:form});};
+    const imported=await upload();expect(imported.status).toBe(201);const deck=await imported.json();expect(deck.name).toBe('Legacy');expect(deck.questions[0].correctChoiceIds).toEqual([deck.questions[0].choices[1].id]);
+    const before=(await call('/decks')).data.length;archive.updateFile('assessment.xml',Buffer.from(assessment.replace(/<resprocessing>.*<\/resprocessing>/,'')));const rejected=await upload();expect(rejected.status).toBe(400);expect(JSON.stringify(await rejected.json())).toContain('explicit correct answer');expect((await call('/decks')).data.length).toBe(before);
+  });
+  it('keeps randomized choices stable, preserves source identity, and deletes only completed history',async()=>{
+    const deck=(await call('/decks','POST',{name:'Choice order'})).data;const q=question();
+    const third=randomUUID();q.choices.push({id:third,content:textDoc('Maybe')});
+    await call(`/decks/${deck.id}/questions`,'POST',q);
+    expect((await call(`/decks/${deck.id}`)).data.settings.choiceOrder).toBe('arranged');
+    expect((await call(`/decks/${deck.id}`,'PATCH',{settings:{order:'arranged',choiceOrder:'invalid',showAnswers:true,showPoints:true}})).response.status).toBe(400);
+    await call(`/decks/${deck.id}`,'PATCH',{settings:{order:'arranged',choiceOrder:'random',showAnswers:true,showPoints:true}});
+    const started=(await call(`/decks/${deck.id}/sessions`,'POST',{})).data;
+    const ids=started.questions[0].choices.map((c:{id:string})=>c.id);
+    expect([...ids].sort()).toEqual(q.choices.map(c=>c.id).sort());
+    expect((await call(`/sessions/${started.id}`)).data.questions[0].choices.map((c:{id:string})=>c.id)).toEqual(ids);
+    expect((await call(`/decks/${deck.id}`)).data.questions[0].choices.map((c:{id:string})=>c.id)).toEqual(q.choices.map(c=>c.id));
+    expect((await call(`/results/${started.id}`,'DELETE')).response.status).toBe(404);
+    expect((await call(`/sessions/${started.id}/responses`,'POST',{questionId:q.id,choiceIds:q.correctChoiceIds})).data.responses[0].correct).toBe(true);
+    const completed=(await call(`/sessions/${started.id}/complete`,'POST',{})).data;
+    expect(completed.questions[0].choices.map((c:{id:string})=>c.id)).toEqual(ids);
+    const zip=await fetch(`${base}/api/decks/${deck.id}/export`);const form=new FormData();form.append('file',new Blob([await zip.arrayBuffer()]),'deck.zip');
+    const imported=await fetch(`${base}/api/import`,{method:'POST',body:form});expect((await imported.json()).settings.choiceOrder).toBe('random');
+    await call(`/decks/${deck.id}`,'DELETE');
+    const summary=(await call('/results')).data.find((r:{id:string})=>r.id===started.id);
+    expect(summary.deckId).toBeNull();expect(summary.sourceDeckId).toBe(deck.id);
+    expect((await call(`/results/${started.id}`,'DELETE')).response.status).toBe(204);
+    expect((await call(`/results/${started.id}`)).response.status).toBe(404);
+    expect((await call(`/results/${started.id}`,'DELETE')).response.status).toBe(404);
+  });
+  it('accepts legacy settings and rejects invalid QTI choice order without changing a deck',async()=>{
+    const deck=(await call('/decks','POST',{name:'Old settings'})).data;const q=question();await call(`/decks/${deck.id}/questions`,'POST',q);
+    const {db}=await import('./store');delete deck.settings.choiceOrder;deck.questions=[q];db.prepare('UPDATE decks SET data=? WHERE id=?').run(JSON.stringify(deck),deck.id);
+    expect((await call(`/decks/${deck.id}`)).data.settings.choiceOrder).toBe('arranged');
+    const session=(await call(`/decks/${deck.id}/sessions`,'POST',{})).data;
+    expect(session.questions[0].choices.map((c:{id:string})=>c.id)).toEqual(q.choices.map(c=>c.id));
+    const response=await fetch(`${base}/api/decks/${deck.id}/export`);const archive=new AdmZip(Buffer.from(await response.arrayBuffer()));
+    const metadata=JSON.parse(archive.readAsText('quizlet-settings.json'));delete metadata.settings.choiceOrder;
+    archive.updateFile('quizlet-settings.json',Buffer.from(JSON.stringify(metadata)));
+    const upload=async(bytes:Buffer,fields:Record<string,string>={})=>{const form=new FormData();form.append('file',new Blob([new Uint8Array(bytes)]),'legacy.zip');for(const [k,v] of Object.entries(fields))form.append(k,v);return fetch(`${base}/api/import`,{method:'POST',body:form});};
+    const legacy=await upload(archive.toBuffer());expect(legacy.status).toBe(201);expect((await legacy.json()).settings.choiceOrder).toBe('arranged');
+    metadata.settings.choiceOrder='invalid';archive.updateFile('quizlet-settings.json',Buffer.from(JSON.stringify(metadata)));
+    expect((await upload(archive.toBuffer(),{deckId:deck.id,applySettings:'true'})).status).toBe(400);
+    expect((await call(`/decks/${deck.id}`)).data.questions).toHaveLength(1);
+  });
+  it('previews and imports Excel atomically and prevents duplicate retry',async()=>{
+    const template=readFileSync('public/templates/quizlet-questions-template.xlsx');
+    await expect(parseExcel(template,'template.xlsx')).rejects.toThrow('no questions');
+    const workbook=new ExcelJS.Workbook();const sheet=workbook.addWorksheet('Questions');
+    sheet.addRow(['type','prompt','choice_a','choice_b','choice_c','choice_d','choice_e','choice_f','correct_answers','explanation']);
+    sheet.getRow(2).values=['single','What is 001?','001','002','','','','','A','Keep leading zero'];
+    sheet.getRow(4).values=['multiple','Prime numbers?','2','4','5','','','','A,C',''];
+    sheet.getRow(5).values=['boolean','Earth orbits Sun?','True','False','','','','','A',''];
+    const bytes=Buffer.from(await workbook.xlsx.writeBuffer());
+    const upload=async(endpoint:string,fields:Record<string,string>={})=>{const form=new FormData();form.append('file',new Blob([new Uint8Array(bytes)]),'questions.xlsx');for(const [key,value] of Object.entries(fields))form.append(key,value);const response=await fetch(`${base}/api/excel-import/${endpoint}`,{method:'POST',body:form});return {response,data:await response.json()};};
+    const before=(await call('/decks')).data.length;const preview=await upload('preview');expect(preview.response.status).toBe(200);expect(preview.data.questionCount).toBe(3);expect(preview.data.skippedRows).toBe(1);expect((await call('/decks')).data.length).toBe(before);
+    const requestId=randomUUID(), created=await upload('commit',{name:'Excel deck',requestId});expect(created.response.status).toBe(201);expect(created.data.deck.questions).toHaveLength(3);expect(created.data.deck.questions[0].choices[0].content).toEqual(textDoc('001'));expect(created.data.deck.questions[1].correctChoiceIds).toHaveLength(2);
+    const retry=await upload('commit',{name:'Excel deck',requestId});expect(retry.data.deck.id).toBe(created.data.deck.id);expect(retry.data.deck.questions).toHaveLength(3);
+    expect((await upload('commit',{name:'Different deck',requestId})).response.status).toBe(400);
+    const deckId=created.data.deck.id;const session=await call(`/decks/${deckId}/sessions`,'POST',{});expect(session.data.questions).toHaveLength(3);
+    const appended=await upload('commit',{deckId,requestId:randomUUID()});expect(appended.data.deck.questions).toHaveLength(6);expect((await call(`/sessions/${session.data.id}`)).data.questions).toHaveLength(3);
+    expect((await fetch(`${base}/api/decks/${deckId}/export`)).status).toBe(200);
+    sheet.getCell('I2').value={formula:'"A"',result:'A'};const invalid=Buffer.from(await workbook.xlsx.writeBuffer());
+    const parsed=await parseExcel(invalid,'bad.xlsx');expect(parsed.result.errorCount).toBeGreaterThan(0);expect(parsed.result.errors.some(e=>e.row===2&&e.column==='correct_answers')).toBe(true);
+    const bad=new FormData();bad.append('file',new Blob([new Uint8Array(invalid)]),'bad.xlsx');bad.append('deckId',deckId);bad.append('requestId',randomUUID());expect((await fetch(`${base}/api/excel-import/commit`,{method:'POST',body:bad})).status).toBe(400);expect((await call(`/decks/${deckId}`)).data.questions).toHaveLength(6);
+  });
+  it('reports malformed spreadsheet rows and rejects unsafe archives',async()=>{
+    const wb=new ExcelJS.Workbook(),sheet=wb.addWorksheet('Questions');
+    sheet.addRow(['type','prompt','choice_a','choice_b','choice_c','choice_d','choice_e','choice_f','correct_answers','explanation']);
+    sheet.addRow(['boolean','Question','True','False','extra','','','','A','']);
+    sheet.addRow(['multiple','Question','one','two','','four','','','A,D','']);
+    sheet.addRow(['single','Question','one','two','','','','','A,A','']);
+    const parsed=await parseExcel(Buffer.from(await wb.xlsx.writeBuffer()),'questions.xlsx');
+    expect(parsed.result.errorCount).toBeGreaterThanOrEqual(3);expect(parsed.result.errors.map(e=>e.row)).toEqual(expect.arrayContaining([2,3,4]));
+    await expect(parseExcel(Buffer.from('not a zip'),'questions.xlsx')).rejects.toThrow();
+    await expect(parseExcel(Buffer.from(await wb.xlsx.writeBuffer()),'questions.xlsm')).rejects.toThrow('.xlsx');
+    const zip=new AdmZip();zip.addFile('xl/workbook.xml',Buffer.from('<!DOCTYPE x [<!ENTITY e SYSTEM "file:///test">]><x/>'));
+    await expect(parseExcel(zip.toBuffer(),'questions.xlsx')).rejects.toThrow('XML entities');
+  });
   it('locks answers, hides feedback and preserves a result after deck deletion',async()=>{
     const created=await call('/decks','POST',{name:'Biology'});expect(created.response.status).toBe(201);const deck=created.data as Deck;const q=question();
     expect((await call(`/decks/${deck.id}/questions`,'POST',q)).response.status).toBe(201);
