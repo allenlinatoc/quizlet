@@ -184,6 +184,8 @@ with sync_playwright() as playwright:
         page.get_by_role("button", name="View Study History").click()
         expect(page.get_by_label("Quiz Deck")).not_to_have_value("")
         expect(page.get_by_text("Deleted deck", exact=True)).to_be_visible()
+        from runpy import run_path
+        run_path(str(Path(__file__).with_name("item_limit_browser.py")))["check_item_limit"](page, BASE)
         assert not errors, f"Browser errors: {errors}"
         print("Browser smoke test passed")
     except Exception:

@@ -32,6 +32,10 @@ Quizlet helps a person prepare for exams by maintaining quiz decks, practising q
 2. Each deck can show or hide answer feedback after submission and independently show or hide running points.
 3. Each deck can keep answer choices in their original order or randomise them independently for each new session. The selected order remains fixed throughout that session and its result review.
 4. New and existing decks default to arranged question and choice order, answer feedback and running points. Running points show points earned out of the total possible.
+5. The existing **Deck settings** dialog includes a numeric field labeled **Item Limit**, positioned immediately below **Choice order** and above **Show correct answers**, using the same row layout, typography, spacing, colors and dividers as existing settings. The helper description reads **0 = No limit (include all questions).**
+6. **Item Limit** defaults to **0** for new and existing decks without a saved value. The field accepts non-negative whole numbers only; negative, fractional or nonnumeric values show validation errors and cannot be saved. A blank field is saved as **0**. The setting is saved per deck and displayed when its settings are reopened.
+7. When a new play session starts, **Item Limit = 0** includes all questions. A positive Item Limit of **N** includes up to **N** distinct questions, capped at the available deck question count, without changing stored deck questions. **Arranged** question order selects the first N questions in saved deck order; **random** question order selects N unique questions in randomized order. Existing session-fixed question and choice ordering remains intact.
+8. The selected question count is reflected in session progress, question totals, maximum possible points, scores and completed result review. Changes to Item Limit affect new sessions only; existing active sessions, completed results and question snapshots stay unchanged. Other deck settings continue to work as before.
 
 ## Playing and results
 
@@ -61,7 +65,6 @@ Quizlet helps a person prepare for exams by maintaining quiz decks, practising q
 2. The template supports single-answer, multiple-answer and true/false questions, two to six text choices, correct-answer letters and an optional explanation. Excel import supports plain text; users can add formatting, formulas and images later in the question editor.
 3. Before import, users can preview the questions and see row-level validation errors. An invalid workbook is rejected without changing any deck; correcting errors and uploading again is required.
 4. Imports accept up to 1,000 questions and a 10 MiB workbook. Existing deck settings and session snapshots are preserved, and retrying the same import request does not create duplicate questions or decks.
-
 
 ## PDF-to-deck conversion
 

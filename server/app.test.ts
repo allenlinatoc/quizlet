@@ -7,15 +7,161 @@ import type { Server } from 'node:http';
 import AdmZip from 'adm-zip';
 import ExcelJS from 'exceljs';
 import { parseExcel } from './excel-import';
-import { textDoc, emptyDoc, type Deck } from '../shared/types';
+import { textDoc, emptyDoc, type Deck, type Question } from '../shared/types';
 
 const directory = mkdtempSync(path.join(os.tmpdir(), 'quizlet-test-'));
 process.env.QUIZLET_DATA_DIR = directory;
 let server: Server; let base = '';
 async function call(url:string, method='GET', body?:unknown) { const response=await fetch(`${base}/api${url}`,{method,...(body===undefined?{}:{headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}); const data=response.status===204?null:await response.json();return {response,data}; }
-function question() { const a=randomUUID(),b=randomUUID();return {id:randomUUID(),type:'single',prompt:textDoc('Which is correct?'),choices:[{id:a,content:textDoc('Yes')},{id:b,content:textDoc('No')}],correctChoiceIds:[a],explanation:textDoc('Because it is.')}; }
+function question(): Question { const a=randomUUID(),b=randomUUID();return {id:randomUUID(),type:'single',prompt:textDoc('Which is correct?'),choices:[{id:a,content:textDoc('Yes')},{id:b,content:textDoc('No')}],correctChoiceIds:[a],explanation:textDoc('Because it is.')}; }
 beforeAll(async()=>{const {default:app}=await import('./index');server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));const address=server.address();if(!address || typeof address==='string')throw new Error('No test port');base=`http://127.0.0.1:${address.port}`});
 afterAll(async()=>{await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));const {db}=await import('./store');db.close();if(path.dirname(directory)===os.tmpdir() && path.basename(directory).startsWith('quizlet-test-'))rmSync(directory,{recursive:true,force:true})});
+describe('Story 01 - Deck settings (5-8)',()=>{
+  async function seed(count=10) {
+    const deck=(await call('/decks','POST',{name:'Item Limit acceptance'})).data as Deck;
+    const questions=Array.from({length:count},(_,i)=>({...question(),prompt:textDoc(`Question ${i+1}`)}));
+    for(const q of questions)expect((await call(`/decks/${deck.id}/questions`,'POST',q)).response.status).toBe(201);
+    return {...deck,questions};
+  }
+
+  it('AC2, AC3, AC7, AC10: defaults, validates and persists per deck without resetting configuration',async()=>{
+    const deck=await seed(1), other=await seed(1);
+    expect(deck.settings).toEqual({order:'arranged',choiceOrder:'arranged',itemLimit:0,showAnswers:true,showPoints:true});
+    const configured={order:'random',choiceOrder:'random',showAnswers:false,showPoints:false};
+    await call(`/decks/${deck.id}`,'PATCH',{settings:configured});
+    for(const itemLimit of [0,1,5,20]) {
+      const saved=await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit}});
+      expect(saved.response.status).toBe(200);
+      expect((await call(`/decks/${deck.id}`)).data.settings).toEqual({...configured,itemLimit});
+      expect((await call(`/decks/${other.id}`)).data.settings.itemLimit).toBe(0);
+    }
+    const before=(await call(`/decks/${deck.id}`)).data;
+    for(const itemLimit of [-1,1.5,'abc','5',null,Number.MAX_SAFE_INTEGER+1]) {
+      expect((await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit}})).response.status).toBe(400);
+      expect((await call(`/decks/${deck.id}`)).data).toEqual(before);
+    }
+    // Older callers that omit the new setting must preserve its saved value.
+    expect((await call(`/decks/${deck.id}`,'PATCH',{settings:configured})).data.settings.itemLimit).toBe(20);
+    expect((await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit:''}})).data.settings).toEqual({...configured,itemLimit:0});
+  });
+
+  it('AC3, AC9, AC10: reads legacy decks and snapshots without rewriting their stored configuration',async()=>{
+    const deck=await seed(3);
+    const started=(await call(`/decks/${deck.id}/sessions`,'POST',{})).data;
+    const {db}=await import('./store');
+    const legacyDeck={...deck,settings:{order:'random',choiceOrder:'random',showAnswers:false,showPoints:false}};
+    db.prepare('UPDATE decks SET data=? WHERE id=?').run(JSON.stringify(legacyDeck),deck.id);
+    const legacySession=JSON.parse((db.prepare('SELECT data FROM sessions WHERE id=?').get(started.id) as {data:string}).data);
+    delete legacySession.settings.itemLimit;
+    const snapshot=JSON.stringify(legacySession);
+    db.prepare('UPDATE sessions SET data=? WHERE id=?').run(snapshot,started.id);
+    expect((await call(`/decks/${deck.id}`)).data.settings).toEqual({...legacyDeck.settings,itemLimit:0});
+    await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit:1}});
+    const resumed=(await call(`/sessions/${started.id}`)).data;
+    expect(resumed.questions).toEqual(started.questions);
+    expect(resumed.settings).toEqual(started.settings);
+    expect((db.prepare('SELECT data FROM sessions WHERE id=?').get(started.id) as {data:string}).data).toBe(snapshot);
+  });
+
+  it.each([[0,10],[1,1],[4,4],[10,10],[20,10]])('AC4, AC5, AC6: arranged Item Limit %i selects %i questions',async(itemLimit,total)=>{
+    const deck=await seed();
+    await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit}});
+    const started=(await call(`/decks/${deck.id}/sessions`,'POST',{})).data;
+    expect(started.questions.map((q:{id:string})=>q.id)).toEqual(deck.questions.slice(0,total).map(q=>q.id));
+    expect(started.total).toBe(total);
+    expect(started.settings.itemLimit).toBe(itemLimit);
+    expect((await call(`/decks/${deck.id}`)).data.questions).toEqual(deck.questions);
+  });
+
+  it.each([
+    ['arranged','arranged',true,true], ['arranged','random',false,true],
+    ['random','arranged',true,false], ['random','random',false,false]
+  ])('AC6, AC10: keeps order %s, choices %s, feedback %s and points %s independent',async(order,choiceOrder,showAnswers,showPoints)=>{
+    const deck=await seed();
+    const settings={order,choiceOrder,showAnswers,showPoints,itemLimit:4};
+    await call(`/decks/${deck.id}`,'PATCH',{settings});
+    const started=(await call(`/decks/${deck.id}/sessions`,'POST',{})).data;
+    expect(started.settings).toEqual(settings);
+    const ids=started.questions.map((q:{id:string})=>q.id);
+    expect(new Set(ids).size).toBe(4);
+    expect(ids.every((id:string)=>deck.questions.some(q=>q.id===id))).toBe(true);
+    if(order==='arranged')expect(ids).toEqual(deck.questions.slice(0,4).map(q=>q.id));
+    for(const q of started.questions) {
+      const original=deck.questions.find(candidate=>candidate.id===q.id)!;
+      const choices=q.choices.map((c:{id:string})=>c.id);
+      expect([...choices].sort()).toEqual(original.choices.map(c=>c.id).sort());
+      if(choiceOrder==='arranged')expect(choices).toEqual(original.choices.map(c=>c.id));
+    }
+    await call(`/sessions/${started.id}`,'PATCH',{cursor:2});
+    const original=deck.questions.find(q=>q.id===ids[0])!;
+    const answered=(await call(`/sessions/${started.id}/responses`,'POST',{questionId:original.id,choiceIds:original.correctChoiceIds})).data;
+    expect('correct' in answered.responses[0]).toBe(showAnswers);
+    expect('points' in answered).toBe(showPoints);
+    if(showPoints){expect(answered.points).toBe(1);expect(answered.total).toBe(4)}
+    expect((await call(`/sessions/${started.id}`)).data.questions).toEqual(started.questions);
+    const completed=(await call(`/sessions/${started.id}/complete`,'POST',{confirmUnanswered:true})).data;
+    expect(completed.questions.map((q:{id:string})=>q.id)).toEqual(ids);
+    for(let i=0;i<4;i++)expect(completed.questions[i].choices).toEqual(started.questions[i].choices);
+    expect((await call(`/decks/${deck.id}`)).data.questions).toEqual(deck.questions);
+  });
+
+  it('AC8, AC9: scores the selected questions and leaves active and completed snapshots unchanged',async()=>{
+    const deck=await seed();
+    const multiple=deck.questions[2];multiple.type='multiple';multiple.correctChoiceIds=multiple.choices.map(c=>c.id);
+    await call(`/decks/${deck.id}/questions/${multiple.id}`,'PUT',multiple);
+    await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit:4}});
+    const started=(await call(`/decks/${deck.id}/sessions`,'POST',{})).data;
+    for(let i=0;i<4;i++) {
+      const q=deck.questions[i];
+      await call(`/sessions/${started.id}/responses`,'POST',{questionId:q.id,choiceIds:i===3?[q.choices[1].id]:q.correctChoiceIds});
+    }
+    await call(`/sessions/${started.id}`,'PATCH',{cursor:3});
+    const activeBefore=(await call(`/sessions/${started.id}`)).data;
+    expect(activeBefore.points).toBe(3);expect(activeBefore.total).toBe(4);
+    await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit:1}});
+    expect((await call(`/sessions/${started.id}`)).data).toEqual(activeBefore);
+    const result=(await call(`/sessions/${started.id}/complete`,'POST',{})).data;
+    const summary=(await call('/results')).data.find((r:{id:string})=>r.id===started.id);
+    expect(summary.points).toBe(3);expect(summary.total).toBe(4);
+    expect(summary.points/summary.total*100).toBe(75);
+    expect(result.questions).toHaveLength(4);expect(result.responses).toHaveLength(4);
+    expect((await call(`/decks/${deck.id}/sessions`,'POST',{})).data.questions).toHaveLength(1);
+    await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit:0}});
+    expect((await call(`/results/${started.id}`)).data).toEqual(result);
+    // Partial multiple-answer selections still earn zero; unanswered questions require confirmation.
+    await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit:4}});
+    const retry=(await call(`/decks/${deck.id}/sessions`,'POST',{restart:true})).data;
+    const partial=(await call(`/sessions/${retry.id}/responses`,'POST',{questionId:multiple.id,choiceIds:[multiple.choices[0].id]})).data;
+    expect(partial.points).toBe(0);expect(partial.total).toBe(4);
+    expect((await call(`/sessions/${retry.id}/complete`,'POST',{})).response.status).toBe(409);
+    expect((await call(`/sessions/${retry.id}/complete`,'POST',{confirmUnanswered:true})).data.questions).toHaveLength(4);
+  });
+
+  it('AC7, AC10: preserves settings through QTI and rejects invalid imported limits atomically',async()=>{
+    const deck=await seed(2), target=await seed(1);
+    await call(`/decks/${deck.id}`,'PATCH',{settings:{itemLimit:1,choiceOrder:'random',showPoints:false}});
+    const response=await fetch(`${base}/api/decks/${deck.id}/export`);
+    const archive=new AdmZip(Buffer.from(await response.arrayBuffer()));
+    const metadata=JSON.parse(archive.readAsText('quizlet-settings.json'));
+    const upload=async(fields:Record<string,string>={})=>{
+      const form=new FormData();form.append('file',new Blob([new Uint8Array(archive.toBuffer())]),'limit.zip');
+      for(const [key,value] of Object.entries(fields))form.append(key,value);
+      const response=await fetch(`${base}/api/import`,{method:'POST',body:form});
+      return {response,data:await response.json()};
+    };
+    expect((await upload()).data.settings).toEqual(metadata.settings);
+    expect((await upload({deckId:target.id})).data.settings).toEqual(target.settings);
+    const before=(await call(`/decks/${target.id}`)).data;
+    for(const itemLimit of [-1,1.5,'abc',null]) {
+      metadata.settings.itemLimit=itemLimit;archive.updateFile('quizlet-settings.json',Buffer.from(JSON.stringify(metadata)));
+      expect((await upload({deckId:target.id,applySettings:'true'})).response.status).toBe(400);
+      expect((await call(`/decks/${target.id}`)).data).toEqual(before);
+    }
+    delete metadata.settings.itemLimit;archive.updateFile('quizlet-settings.json',Buffer.from(JSON.stringify(metadata)));
+    const legacy=await upload();expect(legacy.response.status).toBe(201);expect(legacy.data.settings.itemLimit).toBe(0);
+  });
+});
+
 describe('personal study workflows',()=>{
   it('keeps randomized choices stable, preserves source identity, and deletes only completed history',async()=>{
     const deck=(await call('/decks','POST',{name:'Choice order'})).data;const q=question();

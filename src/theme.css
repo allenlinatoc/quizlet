@@ -1,4 +1,10 @@
 :root { --page:#f8f9fd; --surface:#fff; --surface-alt:#f6f3ff; --text:#222337; --muted:#676779; --border:#dedeea; --accent:#715bd4; --score-accent:#8570df; --score-track:#edeaf7; }
+.setting-row .item-limit-input { width:100px; flex-shrink:0; border:1px solid #e4e3ed; border-radius:7px; padding:8px; color:#555569; background:white; font-size:11px; }
+.setting-row .item-limit-input[aria-invalid=true] { border-color:#b34242; }
+.setting-row .setting-error { color:#b34242; }
+[data-theme=dark] .setting-row .item-limit-input { background:var(--surface-alt); border-color:var(--border); color:var(--text); }
+[data-theme=dark] .setting-row .item-limit-input[aria-invalid=true] { border-color:#ffaaaa; }
+[data-theme=dark] .setting-row .setting-error { color:#ffaaaa; }
 .theme-control { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; font-weight:700; }
 .theme-control select,.history-filters select { color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px; }
 .history-filters { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:0 0 20px; }
