@@ -186,6 +186,7 @@ with sync_playwright() as playwright:
         expect(page.get_by_text("Deleted deck", exact=True)).to_be_visible()
         from runpy import run_path
         run_path(str(Path(__file__).with_name("item_limit_browser.py")))["check_item_limit"](page, BASE)
+        run_path(str(Path(__file__).with_name("question_list_browser.py")))["check_question_list"](page, BASE)
         assert not errors, f"Browser errors: {errors}"
         print("Browser smoke test passed")
     except Exception:

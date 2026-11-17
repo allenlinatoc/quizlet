@@ -25,6 +25,9 @@ Quizlet helps a person prepare for exams by maintaining quiz decks, practising q
 3. Questions support single-answer, multiple-answer and true/false choices. Prompts, choices and optional explanations support basic formatting, images and formulas.
 4. Images support PNG, JPEG and WebP, up to 10 MiB and 25 megapixels. Users can enter LaTeX formulas and describe uploaded images for accessibility.
 5. Deleting a deck abandons its active sessions but preserves completed results and their question snapshots.
+6. The question list preserves the existing application design, colors, typography and functionality while using a consistent three-section row layout: left for the drag handle, reorder controls and question number; center for the question text and question type/details; and right for the Edit action.
+7. The Edit action stays consistently aligned at the right of each row. Long question text wraps without overlapping the Edit action and displays a maximum two-line preview with an ellipsis when truncated. Rows can expand vertically as needed to accommodate their content.
+8. The question list adapts to different browser widths without horizontal overflow or excessive whitespace, while preserving existing question ordering, editing, deletion and other functionality. These layout changes do not modify Deck settings or the quiz-playing experience.
 
 ## Deck settings
 
